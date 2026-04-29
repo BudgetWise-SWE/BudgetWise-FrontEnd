@@ -1,0 +1,106 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<link rel="stylesheet" href="../CSS/signup.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+<title>ZenBudget</title>
+</head>
+
+<body>
+<div class="container">
+
+    <!-- Left Side -->
+    <div class="left-panel">
+
+        <div class="brand">
+            <div class="logo-box">Z</div>
+            <span>ZenBudget</span>
+        </div>
+
+        <div class="hero-text">
+            <h1>Master your money with mindful precision.</h1>
+            <p>
+                The all-in-one platform for high-growth individuals to track,
+                analyze, and optimize their financial future.
+            </p>
+        </div>
+
+        <div class="features">
+            <div class="card">Real-time Analytics</div>
+            <div class="card">Bank-grade Security</div>
+        </div>
+
+        <p class="users">Joined by 10,000+ users this month</p>
+
+    </div>
+
+    <!-- Right Side -->
+    <div class="right-panel">
+
+        <div class="form-box">
+
+            <h2>Create your account</h2>
+            <p class="welcome">Join ZenBudget today and take control of your finances.</p>
+
+            <form id="create-acc-form">
+
+                <div id="sign-up">
+
+                    <div class="sign-up-info">
+                        <label>Full Name</label>
+                        <input id= "username user-error" type="text" placeholder="John Doe">
+                        <p class="error">Please Enter a Valid username</p>
+                    </div>
+                    <div class="sign-up-info">
+                        <label>Email Address</label>
+                        <input id = "email" type="email" value="alex@example.com">
+                        <p class="error email-error" >Please Enter a Valid username</p>
+                    </div>
+                    <div class="sign-up-info">
+                        <label>Password</label>
+                        <input  id= "password"  type="password" placeholder="Min. 8 characters">
+                        <p class="error password-error" >Please Enter a Valid username</p>
+
+                    </div>
+                    <div class="sign-up-info">
+                        <label>Confirm Password</label>
+                        <input id="confirmpass confirmpass-error" placeholder="Min. 8 characters">
+                        <p class="error" >Please Enter a Valid username</p>
+                    </div>    
+                    
+                </div>
+                <div class="checkbox">
+                    <input type="checkbox" checked>
+                    <span>I agree to Terms of Service and Privacy Policy</span>
+                </div>
+
+                <button type="submit">Create Free Account</button>
+
+            </form>
+
+            <div class="divider">OR SIGN UP WITH</div>
+
+            <div class="social-buttons">
+                <button>Google</button>
+                <button>GitHub</button>
+            </div>
+
+            <p class="signup">
+                Already have an account?
+                <a href="login.html">Sign In</a>
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+</body>
+</html>

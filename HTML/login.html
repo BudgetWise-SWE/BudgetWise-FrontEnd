@@ -1,0 +1,107 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login | ZenBudget</title>
+
+<link rel="stylesheet" href="../CSS/login.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- Left Side -->
+    <section class="left-panel">
+
+        <div class="content">
+
+            <div class="brand">
+                <div class="logo">Z</div>
+                <h1>BudgetWise</h1>
+                <p>Harmonize Your Finances</p>
+            </div>
+
+            <div class="testimonial">
+                <div class="stars">★★★★★</div>
+
+                <h2>
+                    Master your money with ease. ZenBudget transformed how I track
+                    expenses and finally hit my savings goals.
+                </h2>
+
+                <div class="user">
+                    <img src="https://via.placeholder.com/50" alt="user">
+                    <div>
+                        <strong>Sarah Jenkins</strong>
+                        <span>Freelance Designer</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Right Side -->
+    <section class="right-panel">
+
+        <div class="login-box">
+
+            <h2>Welcome Back</h2>
+            <p>Please enter your details to sign in.</p>
+
+
+            
+
+            <form id="login-form">
+
+                <div class="email_div">
+                    <label>Email Address</label>
+                    <input type="email" id='email' placeholder="name@example.com" value="basemlola949@gmail.com">
+                    <p id="email-error">please enter a valid password</p>
+
+                </div>
+                
+
+                <div class="password_div">
+                    <label>Password</label>
+                    <input type="password" id ='password'  placeholder="••••••••" value ="">
+                    <p id="password-error">please enter a valid password</p>
+                </div>
+
+                <div class="remember">
+                    <input type="checkbox">
+                    <span>Remember me for 30 days</span>
+                </div>
+
+                <button id="main-btn">Sign In </button>
+
+            </form>
+
+            <p class="signup">
+                Don't have an account?
+                <a href="signup.html">Create an account for free</a>
+            </p>
+
+            <div class="divider">OR CONTINUE WITH</div>
+
+             <div class="social-grid">
+                <button class="login-button">
+                    <i class="fa-brands fa-google"></i>
+                    Google</button>
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+    <script src="../JS/login.js"></script>
+</body>
+</html>
