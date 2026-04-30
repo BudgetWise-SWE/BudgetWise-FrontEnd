@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZenBudget - Dashboard</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="../CSS/dashboard.css" />
+</head>
+<body>
+
+  <!-- ================================================
+       TOP NAVIGATION
+  ================================================ -->
+  <header class="topbar">
+    <div class="topbar-left">
+
+      <!-- Brand -->
+      <div class="brand">
+        <div class="brand-icon">
+          <span class="material-symbols-outlined brand-icon__symbol">account_balance_wallet</span>
+        </div>
+        <h1 class="brand-name">ZenBudget</h1>
+      </div>
+
+      <!-- Primary Nav -->
+      <nav class="main-nav">
+        <a href="#" class="nav-item nav-item--active">
+          <span class="material-symbols-outlined nav-item__icon">dashboard</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="transaction.html" class="nav-item">
+          <span class="material-symbols-outlined nav-item__icon">payments</span>
+          <span>Transactions</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="material-symbols-outlined nav-item__icon">account_balance_wallet</span>
+          <span>Budgets</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="material-symbols-outlined nav-item__icon">savings</span>
+          <span>Savings Goals</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="material-symbols-outlined nav-item__icon">history</span>
+          <span>History</span>
+        </a>
+      </nav>
+
+    </div>
+
+    <!-- Right Actions -->
+    <div class="topbar-right">
+      <button class="topbar-icon-btn" aria-label="Notifications">
+        <span class="material-symbols-outlined">notifications</span>
+      </button>
+      <div class="topbar-divider" aria-hidden="true"></div>
+      <div class="topbar-avatar">
+        <img
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoVizDtGMpABWijFWxrqDSF6-OT84AC4WPKs37kznCAo8sIrU-aWGMkU5hSmfK_S4lNgdZt8qUaY0wk3mmhJWO4zEDancsXUWwTMUdXQy8a3toITpkaoevPHvi_upeGjSq6NjyYJSTR8GkizXNrMevh-29nDr-IDxZ2eHC7L7hSUi8C1jhHJpdwTquDAGAJgPU0LOPA8lBexz7MRiMP1JpftlvdC_M52tYiHThVFkEZ6nAICzlJg8Rcvj0KtOL3nJCr0NnFJbeP2Y"
+          alt="User profile"
+          class="topbar-avatar__img"
+        />
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ================================================
+       MAIN CONTENT
+  ================================================ -->
+  <main class="page-content">
+    <div class="page-inner">
+
+      <!-- ── WELCOME ─────────────────────────────────── -->
+      <div class="welcome">
+        <h3 class="welcome__title">Financial Overview</h3>
+        <p class="welcome__subtitle">Welcome back, Alex. Your savings are up 12% this month.</p>
+      </div>
+
+
+      <!-- ── METRIC CARDS ───────────────────────────── -->
+      <div class="metrics-grid">
+
+        <!-- Total Income -->
+        <div class="metric-card metric-card--income">
+          <div class="metric-card__glow" aria-hidden="true"></div>
+          <div class="metric-card__top">
+            <div class="metric-card__icon-wrap">
+              <span class="material-symbols-outlined metric-card__icon">trending_up</span>
+            </div>
+            <span class="metric-card__badge">+4.2%</span>
+          </div>
+          <p class="metric-card__label">Total Income</p>
+          <h4 class="metric-card__value">$8,540.00</h4>
+          <div class="metric-card__bar-track">
+            <div class="metric-card__bar metric-card__bar--75"></div>
+          </div>
+        </div>
+
+        <!-- Total Expenses -->
+        <div class="metric-card metric-card--expenses">
+          <div class="metric-card__glow metric-card__glow--left" aria-hidden="true"></div>
+          <div class="metric-card__top">
+            <div class="metric-card__icon-wrap">
+              <span class="material-symbols-outlined metric-card__icon">shopping_cart</span>
+            </div>
+            <span class="metric-card__badge metric-card__badge--pink">-2.1%</span>
+          </div>
+          <p class="metric-card__label">Total Expenses</p>
+          <h4 class="metric-card__value">$3,210.50</h4>
+          <div class="metric-card__bar-track">
+            <div class="metric-card__bar metric-card__bar--40"></div>
+          </div>
+        </div>
+
+        <!-- Remaining Balance -->
+        <div class="metric-card metric-card--balance">
+          <div class="metric-card__ring" aria-hidden="true"></div>
+          <div class="metric-card__top">
+            <div class="metric-card__icon-wrap">
+              <span class="material-symbols-outlined metric-card__icon">account_balance</span>
+            </div>
+            <span class="metric-card__badge">Safe</span>
+          </div>
+          <p class="metric-card__label">Remaining Balance</p>
+          <h4 class="metric-card__value">$5,329.50</h4>
+          <div class="metric-card__dots">
+            <div class="metric-card__dot metric-card__dot--on"></div>
+            <div class="metric-card__dot metric-card__dot--off"></div>
+            <div class="metric-card__dot metric-card__dot--off"></div>
+          </div>
+        </div>
+
+        <!-- Total Transactions -->
+        <div class="metric-card metric-card--transactions">
+          <div class="metric-card__glow" aria-hidden="true"></div>
+          <div class="metric-card__top">
+            <div class="metric-card__icon-wrap">
+              <span class="material-symbols-outlined metric-card__icon">receipt_long</span>
+            </div>
+            <span class="metric-card__badge">+15%</span>
+          </div>
+          <p class="metric-card__label">Total Transactions</p>
+          <h4 class="metric-card__value">1,284</h4>
+          <div class="metric-card__bar-track">
+            <div class="metric-card__bar metric-card__bar--100"></div>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ── RECENT TRANSACTIONS ────────────────────── -->
+      <section class="transactions-panel">
+
+        <div class="transactions-header">
+          <h5 class="panel-title">Recent Transactions</h5>
+          <a href="transaction.html" class="view-all-link">View All</a>
+        </div>
+
+        <div class="table-wrap">
+          <table class="tx-table">
+            <thead>
+              <tr>
+                <th class="tx-table__th">Transaction</th>
+                <th class="tx-table__th">Category</th>
+                <th class="tx-table__th">Date</th>
+                <th class="tx-table__th tx-table__th--right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <!-- Row 1 -->
+              <tr class="tx-row">
+                <td class="tx-table__td">
+                  <div class="tx-desc">
+                    <div class="tx-icon tx-icon--orange">
+                      <span class="material-symbols-outlined">restaurant</span>
+                    </div>
+                    <div class="tx-desc__text">
+                      <p class="tx-desc__name">Sweetgreen Salad</p>
+                      <p class="tx-desc__note">Card ending in 4242</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="tx-table__td">
+                  <span class="tx-category">Food &amp; Drinks</span>
+                </td>
+                <td class="tx-table__td">
+                  <span class="tx-date">Jun 14, 2023</span>
+                </td>
+                <td class="tx-table__td tx-table__td--right">
+                  <span class="tx-amount tx-amount--debit">-$18.50</span>
+                </td>
+              </tr>
+
+              <!-- Row 2 -->
+              <tr class="tx-row">
+                <td class="tx-table__td">
+                  <div class="tx-desc">
+                    <div class="tx-icon tx-icon--blue">
+                      <span class="material-symbols-outlined">work</span>
+                    </div>
+                    <div class="tx-desc__text">
+                      <p class="tx-desc__name">Tech Corp Salary</p>
+                      <p class="tx-desc__note">Direct Deposit</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="tx-table__td">
+                  <span class="tx-category">Income</span>
+                </td>
+                <td class="tx-table__td">
+                  <span class="tx-date">Jun 12, 2023</span>
+                </td>
+                <td class="tx-table__td tx-table__td--right">
+                  <span class="tx-amount tx-amount--credit">+$4,250.00</span>
+                </td>
+              </tr>
+
+              <!-- Row 3 -->
+              <tr class="tx-row">
+                <td class="tx-table__td">
+                  <div class="tx-desc">
+                    <div class="tx-icon tx-icon--purple">
+                      <span class="material-symbols-outlined">bolt</span>
+                    </div>
+                    <div class="tx-desc__text">
+                      <p class="tx-desc__name">City Electric Co.</p>
+                      <p class="tx-desc__note">Utility Bill</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="tx-table__td">
+                  <span class="tx-category">Utilities</span>
+                </td>
+                <td class="tx-table__td">
+                  <span class="tx-date">Jun 10, 2023</span>
+                </td>
+                <td class="tx-table__td tx-table__td--right">
+                  <span class="tx-amount tx-amount--debit">-$142.00</span>
+                </td>
+              </tr>
+
+              <!-- Row 4 -->
+              <tr class="tx-row">
+                <td class="tx-table__td">
+                  <div class="tx-desc">
+                    <div class="tx-icon tx-icon--blue">
+                      <span class="material-symbols-outlined">shopping_bag</span>
+                    </div>
+                    <div class="tx-desc__text">
+                      <p class="tx-desc__name">Apple Store</p>
+                      <p class="tx-desc__note">Subscription - iCloud+</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="tx-table__td">
+                  <span class="tx-category">Shopping</span>
+                </td>
+                <td class="tx-table__td">
+                  <span class="tx-date">Jun 08, 2023</span>
+                </td>
+                <td class="tx-table__td tx-table__td--right">
+                  <span class="tx-amount tx-amount--debit">-$9.99</span>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+</body>
+</html>

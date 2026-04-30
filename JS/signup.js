@@ -190,27 +190,44 @@ function validateConfirmPassword(confirmpass,password){
     }
 }
 
+function simpleHash(str) {
+    return btoa(str); // base64 encoding (NOT real hashing, just learning)
+}
 
 
 
-createAccountForm.addEventListener('submit',(e)=>{
+
+const users = JSON.parse(localStorage.getItem("users")) || []
+
+
+
+createAccountForm.addEventListener('submit',(e) => {
     
     e.preventDefault()
     const confirmPassword = document.getElementById("confirmpass").value.trim();
     const password = document.getElementById("password").value.trim();
     const email = document.getElementById("email").value.trim();
-    const full_name = document.getElementById("fullname").value.trim();
+    const fullName = document.getElementById("fullname").value.trim();
 
-    console.log(password)
-    console.log(full_name)
+    
 
     let is_password_Ok = validatePassword(password);
-    let is_full_name_ok = ValidateFullName(full_name);
+    let is_full_name_ok = ValidateFullName(fullName);
     let is_email_ok = validateMail(email);
     let is_confirm_pass_ok = validateConfirmPassword(confirmPassword,password)
 
     if(is_full_name_ok && is_password_Ok && is_email_ok &&is_confirm_pass_ok ){
-        console.log("every thing is Ok")
+        const user ={
+            fullname:fullName,
+            email:email,
+            password: simpleHash(password) // "hashed",
+        }
+
+        users.push(user)
+        window.localStorage.setItem("users",JSON.stringify(users))
+        console.log("information is added")
+        
     }
+    
 
 });

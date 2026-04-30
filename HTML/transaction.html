@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BudgetWise - Expense Management</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="../CSS/transaction.css" />
+</head>
+<body>
+
+  <!-- ================================================
+       TOP NAVIGATION
+  ================================================ -->
+  <header class="topbar">
+    <div class="topbar-left">
+
+      <!-- Brand -->
+      <div class="brand">
+        <div class="brand-icon">
+          <span class="material-symbols-outlined brand-icon__symbol">account_balance_wallet</span>
+        </div>
+        <h1 class="brand-name">BudgetWise</h1>
+      </div>
+
+      <!-- Primary Nav -->
+      <nav class="main-nav">
+        <a href="dashboard.html" class="nav-item">
+          <span class="material-symbols-outlined nav-item__icon">dashboard</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="transaction.html" class="nav-item nav-item--active">
+          <span class="material-symbols-outlined nav-item__icon nav-item__icon--filled">payments</span>
+          <span>Transactions</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="material-symbols-outlined nav-item__icon">account_balance_wallet</span>
+          <span>Budgets</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="material-symbols-outlined nav-item__icon">savings</span>
+          <span>Savings Goals</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="material-symbols-outlined nav-item__icon">history</span>
+          <span>History</span>
+        </a>
+      </nav>
+
+    </div>
+
+    <!-- Right Actions -->
+    <div class="topbar-actions">
+      <button class="topbar-btn" aria-label="Settings">
+        <span class="material-symbols-outlined">settings</span>
+      </button>
+      <button class="topbar-btn topbar-btn--danger" aria-label="Logout">
+        <span class="material-symbols-outlined">logout</span>
+      </button>
+    </div>
+  </header>
+
+
+  <!-- ================================================
+       MAIN CONTENT
+  ================================================ -->
+  <main class="page-content">
+    <div class="page-inner">
+
+      <!-- ── BALANCE BANNER ─────────────────────────── -->
+      <div class="balance-banner">
+        <div class="balance-banner__bg-icon" aria-hidden="true">
+          <span class="material-symbols-outlined">account_balance</span>
+        </div>
+        <div class="balance-banner__body">
+          <p class="balance-banner__label">Total Balance</p>
+          <h3 class="balance-banner__amount">$12,450.80</h3>
+          <div class="balance-banner__trend">
+            <span class="material-symbols-outlined balance-banner__trend-icon">trending_up</span>
+            <span>+12.5% from last month</span>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ── TWO-COLUMN GRID ────────────────────────── -->
+      <div class="content-grid">
+
+        <!-- Add Expense Form -->
+        <aside class="form-panel glass-card">
+          <h4 class="panel-title">Add Expense</h4>
+
+          <form class="expense-form">
+
+            <div class="form-field">
+              <label class="form-label" for="amount">Amount</label>
+              <div class="amount-wrap">
+                <span class="amount-wrap__symbol">$</span>
+                <input
+                  id="amount"
+                  type="number"
+                  class="form-input amount-wrap__input"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="category">Category</label>
+              <select id="category" class="form-input form-select">
+                <option>Dining &amp; Drinks</option>
+                <option>Shopping</option>
+                <option>Transportation</option>
+                <option>Entertainment</option>
+                <option>Utilities</option>
+                <option>Health</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="tx-date">Date</label>
+              <input id="tx-date" type="date" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="notes">Notes</label>
+              <textarea
+                id="notes"
+                class="form-input form-textarea"
+                rows="3"
+                placeholder="Add a description..."
+              ></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">
+              <span class="material-symbols-outlined">add</span>
+              Add Transaction
+            </button>
+
+          </form>
+        </aside>
+
+
+        <!-- Transactions List -->
+        <section class="transactions-panel">
+
+          <!-- Panel header -->
+          <div class="transactions-header">
+            <div class="transactions-header__copy">
+              <h4 class="panel-title">Recent Transactions</h4>
+              <p class="transactions-header__sub">Showing last 24 transactions</p>
+            </div>
+            <div class="transactions-header__actions">
+              <button class="icon-btn">
+                <span class="material-symbols-outlined">filter_list</span>
+              </button>
+              <button class="icon-btn">
+                <span class="material-symbols-outlined">download</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="table-wrap">
+            <table class="tx-table">
+              <thead>
+                <tr>
+                  <th class="tx-table__th">Description</th>
+                  <th class="tx-table__th">Category</th>
+                  <th class="tx-table__th">Date</th>
+                  <th class="tx-table__th tx-table__th--right">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+
+                <!-- Row 1 -->
+                <tr class="tx-row">
+                  <td class="tx-table__td">
+                    <div class="tx-desc">
+                      <div class="tx-icon tx-icon--orange">
+                        <span class="material-symbols-outlined">restaurant</span>
+                      </div>
+                      <div class="tx-desc__text">
+                        <p class="tx-desc__name">The Artisan Bakery</p>
+                        <p class="tx-desc__note">Morning coffee and pastries</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="tx-table__td">
+                    <span class="tx-badge tx-badge--orange">Dining</span>
+                  </td>
+                  <td class="tx-table__td tx-table__td--date">Today, 09:15 AM</td>
+                  <td class="tx-table__td tx-table__td--amount">-$24.50</td>
+                </tr>
+
+                <!-- Row 2 -->
+                <tr class="tx-row">
+                  <td class="tx-table__td">
+                    <div class="tx-desc">
+                      <div class="tx-icon tx-icon--purple">
+                        <span class="material-symbols-outlined">shopping_bag</span>
+                      </div>
+                      <div class="tx-desc__text">
+                        <p class="tx-desc__name">Apple Store</p>
+                        <p class="tx-desc__note">Subscription - iCloud+</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="tx-table__td">
+                    <span class="tx-badge tx-badge--purple">Shopping</span>
+                  </td>
+                  <td class="tx-table__td tx-table__td--date">Yesterday</td>
+                  <td class="tx-table__td tx-table__td--amount">-$9.99</td>
+                </tr>
+
+                <!-- Row 3 -->
+                <tr class="tx-row">
+                  <td class="tx-table__td">
+                    <div class="tx-desc">
+                      <div class="tx-icon tx-icon--blue">
+                        <span class="material-symbols-outlined">commute</span>
+                      </div>
+                      <div class="tx-desc__text">
+                        <p class="tx-desc__name">Uber Trip</p>
+                        <p class="tx-desc__note">Commute to office</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="tx-table__td">
+                    <span class="tx-badge tx-badge--blue">Transport</span>
+                  </td>
+                  <td class="tx-table__td tx-table__td--date">Oct 24, 2023</td>
+                  <td class="tx-table__td tx-table__td--amount">-$32.80</td>
+                </tr>
+
+                <!-- Row 4 -->
+                <tr class="tx-row">
+                  <td class="tx-table__td">
+                    <div class="tx-desc">
+                      <div class="tx-icon tx-icon--emerald">
+                        <span class="material-symbols-outlined">fitness_center</span>
+                      </div>
+                      <div class="tx-desc__text">
+                        <p class="tx-desc__name">Equinox Membership</p>
+                        <p class="tx-desc__note">Monthly wellness fee</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="tx-table__td">
+                    <span class="tx-badge tx-badge--emerald">Health</span>
+                  </td>
+                  <td class="tx-table__td tx-table__td--date">Oct 22, 2023</td>
+                  <td class="tx-table__td tx-table__td--amount">-$185.00</td>
+                </tr>
+
+                <!-- Row 5 -->
+                <tr class="tx-row">
+                  <td class="tx-table__td">
+                    <div class="tx-desc">
+                      <div class="tx-icon tx-icon--red">
+                        <span class="material-symbols-outlined">bolt</span>
+                      </div>
+                      <div class="tx-desc__text">
+                        <p class="tx-desc__name">ConEd Utilities</p>
+                        <p class="tx-desc__note">Electricity bill</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="tx-table__td">
+                    <span class="tx-badge tx-badge--red">Utilities</span>
+                  </td>
+                  <td class="tx-table__td tx-table__td--date">Oct 20, 2023</td>
+                  <td class="tx-table__td tx-table__td--amount">-$142.10</td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination">
+            <p class="pagination__info">Page 1 of 4</p>
+            <div class="pagination__controls">
+              <button class="pagination__btn" disabled>Previous</button>
+              <button class="pagination__btn">Next</button>
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+
+  <!-- ================================================
+       FLOATING ACTION BUTTON (mobile only)
+  ================================================ -->
+  <button class="fab" aria-label="Add transaction">
+    <span class="material-symbols-outlined fab__icon">add</span>
+  </button>
+
+</body>
+</html>
