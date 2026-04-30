@@ -99,7 +99,7 @@ body{
     margin-bottom:10px;
 }
 
-.form-box welcome{
+.welcome{
     color:#666;
     margin-bottom:25px;
 }
@@ -216,12 +216,20 @@ button:hover{
     border: 1px solid #ccc;
 }
 
-
-.error{
+#fullname-error,
+#confirmpass-error,
+#email-error,
+#password-error{
     margin-bottom:0;
     font-size: 12px;
     margin-left: 5px;
     margin-top: 5px;
     color: red;
     visibility: hidden;
+}
+
+
+#sign-up-button{
+    width: 50%;
+    margin: auto;
 }
