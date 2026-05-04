@@ -118,7 +118,7 @@ function login(email,password){
         return false
     }
 
-    const users = JSON.parse(window.localStorage.getItem("users") || [])
+    const users = JSON.parse(window.localStorage.getItem("users") )|| []
     
     console.log(typeof users)
     console.log(users)
