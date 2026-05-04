@@ -356,7 +356,7 @@ input, select, textarea {
 .nav-item:hover { color: var(--color-primary); }
 
 .nav-item--active {
-  color:         #00c2ff;
+  color:         #00c2ff ;
   font-weight:   600;
   border-bottom: 2px solid #00c2ff;
   padding-bottom: calc(var(--space-2) - 2px);

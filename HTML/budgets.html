@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZenBudget - Budgets</title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../CSS/general.css" />
+    <link rel="stylesheet" href="../CSS/budgets.css" />
+  </head>
+  <body>
+    <!-- TOP NAVIGATION -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="brand">
+          <div class="brand-icon">
+            <span class="material-symbols-outlined brand-icon__symbol"
+              >account_balance_wallet</span
+            >
+          </div>
+          <h1 class="brand-name">ZenBudget</h1>
+        </div>
+
+        <nav class="main-nav">
+          <a href="dashboard.html" class="nav-item">
+            <span class="material-symbols-outlined nav-item__icon"
+              >dashboard</span
+            >
+            <span>Dashboard</span>
+          </a>
+          <a href="transaction.html" class="nav-item">
+            <span class="material-symbols-outlined nav-item__icon"
+              >payments</span
+            >
+            <span>Transactions</span>
+          </a>
+          <a href="budgets.html" class="nav-item nav-item--active">
+            <span class="material-symbols-outlined nav-item__icon"
+              >account_balance_wallet</span
+            >
+            <span>Budgets</span>
+          </a>
+          <a href="savings.html" class="nav-item">
+            <span class="material-symbols-outlined nav-item__icon"
+              >savings</span
+            >
+            <span>Savings Goals</span>
+          </a>
+          <a href="history.html" class="nav-item">
+            <span class="material-symbols-outlined nav-item__icon"
+              >history</span
+            >
+            <span>History</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="topbar-right">
+        <button class="topbar-icon-btn" aria-label="Notifications">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <div class="topbar-divider"></div>
+        <div class="topbar-avatar">
+          <img
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoVizDtGMpABWijFWxrqDSF6-OT84AC4WPKs37kznCAo8sIrU-aWGMkU5hSmfK_S4lNgdZt8qUaY0wk3mmhJWO4zEDancsXUWwTMUdXQy8a3toITpkaoevPHvi_upeGjSq6NjyYJSTR8GkizXNrMevh-29nDr-IDxZ2eHC7L7hSUi8C1jhHJpdwTquDAGAJgPU0LOPA8lBexz7MRiMP1JpftlvdC_M52tYiHThVFkEZ6nAICzlJg8Rcvj0KtOL3nJCr0NnFJbeP2Y"
+            alt="User profile"
+            class="topbar-avatar__img"
+          />
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="page-content">
+      <div class="page-inner">
+        <!-- Page Header -->
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Budget Overview</h1>
+            <p class="page-subtitle">
+              Set spending limits and track your progress
+            </p>
+          </div>
+          <button class="btn btn--primary" id="createBudgetBtn">
+            <span class="material-symbols-outlined">add</span>
+            Create New Budget
+          </button>
+        </div>
+
+        <!-- Budget Summary Cards -->
+        <div class="budget-summary-grid">
+          <div class="summary-card summary-card--total">
+            <span class="material-symbols-outlined summary-card__icon"
+              >payments</span
+            >
+            <div class="summary-card__content">
+              <p class="summary-card__label">Total Budget</p>
+              <h3 class="summary-card__value" id="totalBudget">$0</h3>
+            </div>
+          </div>
+          <div class="summary-card summary-card--spent">
+            <span class="material-symbols-outlined summary-card__icon"
+              >shopping_cart</span
+            >
+            <div class="summary-card__content">
+              <p class="summary-card__label">Total Spent</p>
+              <h3 class="summary-card__value" id="totalSpent">$0</h3>
+            </div>
+          </div>
+          <div class="summary-card summary-card--remaining">
+            <span class="material-symbols-outlined summary-card__icon"
+              >account_balance</span
+            >
+            <div class="summary-card__content">
+              <p class="summary-card__label">Remaining</p>
+              <h3 class="summary-card__value" id="totalRemaining">$0</h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Type Toggle Buttons -->
+        <div class="category-toggle">
+          <button class="toggle-btn toggle-btn--active" id="showPredefinedBtn">
+            <span class="material-symbols-outlined">category</span>
+            Predefined Categories
+          </button>
+          <button class="toggle-btn" id="showCustomBtn">
+            <span class="material-symbols-outlined">edit_note</span>
+            My Custom Categories
+          </button>
+        </div>
+
+        <!-- Month Selector -->
+        <div class="month-selector">
+          <button class="month-nav-btn" id="prevMonthBtn">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+          <div class="current-month">
+            <span class="material-symbols-outlined">calendar_month</span>
+            <h3 id="currentMonth">May 2026</h3>
+          </div>
+          <button class="month-nav-btn" id="nextMonthBtn">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
+
+        <!-- Budgets List Container -->
+        <div class="budgets-container" id="budgetsContainer"></div>
+      </div>
+    </main>
+
+    <!-- ================================================
+         CREATE BUDGET MODAL
+    ================================================ -->
+    <div class="modal" id="createBudgetModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Create New Budget</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <form class="modal-form" id="budgetForm">
+          <div class="form-field">
+            <label class="form-label">Category</label>
+            <select class="form-input" id="categorySelect"></select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Monthly Limit ($)</label>
+            <input
+              type="number"
+              class="form-input"
+              id="budgetLimit"
+              placeholder="Enter amount"
+              required
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Month</label>
+            <input type="month" class="form-input" id="budgetMonth" />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn--secondary cancel-btn">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn--primary">
+              Create Budget
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ================================================
+         ADD CUSTOM CATEGORY MODAL
+    ================================================ -->
+    <div class="modal" id="addCustomCategoryModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Add Custom Category</h3>
+          <button class="modal-close-custom">&times;</button>
+        </div>
+        <form class="modal-form" id="customCategoryForm">
+          <div class="form-field">
+            <label class="form-label">Category Name</label>
+            <input
+              type="text"
+              class="form-input"
+              id="customCategoryName"
+              placeholder="e.g., Pet Care, Gym"
+              required
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Icon</label>
+            <select class="form-input" id="customCategoryIcon">
+              <option value="category">📁 General</option>
+              <option value="pets">🐾 Pets</option>
+              <option value="fitness_center">💪 Gym</option>
+              <option value="subscriptions">📺 Subscriptions</option>
+              <option value="school">📚 Education</option>
+              <option value="medical_services">🏥 Medical</option>
+              <option value="coffee">☕ Coffee</option>
+              <option value="shopping_bag">🛍️ Shopping</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn--secondary cancel-custom-btn">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn--primary">Add Category</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ================================================
+         SET BUDGET MODAL (for setting/editing budget amount)
+    ================================================ -->
+    <div class="modal" id="setBudgetModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="setBudgetTitle">Set Budget</h3>
+          <button class="modal-close set-budget-close">&times;</button>
+        </div>
+        <form class="modal-form" id="setBudgetForm">
+          <div class="form-field">
+            <label class="form-label">Category</label>
+            <input
+              type="text"
+              class="form-input"
+              id="setBudgetCategory"
+              disabled
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Monthly Limit ($)</label>
+            <input
+              type="number"
+              class="form-input"
+              id="setBudgetLimit"
+              placeholder="Enter amount"
+              required
+            />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn--secondary set-budget-cancel">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn--primary">Save Budget</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ================================================
+         EDIT CUSTOM CATEGORY MODAL
+    ================================================ -->
+    <div class="modal" id="editCategoryModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Edit Custom Category</h3>
+          <button class="modal-close edit-category-close">&times;</button>
+        </div>
+        <form class="modal-form" id="editCategoryForm">
+          <div class="form-field">
+            <label class="form-label">Category Name</label>
+            <input
+              type="text"
+              class="form-input"
+              id="editCategoryNameInput"
+              required
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Icon</label>
+            <select class="form-input" id="editCategoryIcon">
+              <option value="category">📁 General</option>
+              <option value="pets">🐾 Pets</option>
+              <option value="fitness_center">💪 Gym</option>
+              <option value="subscriptions">📺 Subscriptions</option>
+              <option value="school">📚 Education</option>
+              <option value="medical_services">🏥 Medical</option>
+              <option value="coffee">☕ Coffee</option>
+              <option value="shopping_bag">🛍️ Shopping</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn--secondary edit-category-cancel"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn--primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ================================================
+         DELETE BUDGET CONFIRMATION MODAL (Matches Edit style)
+    ================================================ -->
+    <div class="modal" id="deleteConfirmModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="deleteTitle">Delete Budget?</h3>
+          <button class="modal-close delete-budget-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p
+            id="deleteMessage"
+            style="margin-bottom: var(--space-6); color: var(--color-muted)"
+          >
+            Are you sure you want to delete this budget? This action cannot be
+            undone.
+          </p>
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn--secondary delete-budget-cancel"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn--danger" id="deleteConfirmBtn">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================
+         DELETE CUSTOM CATEGORY CONFIRMATION MODAL (Matches Edit style)
+    ================================================ -->
+    <div class="modal" id="deleteCategoryConfirmModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="deleteCategoryTitle">Delete Custom Category?</h3>
+          <button class="modal-close delete-category-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p
+            id="deleteCategoryMessage"
+            style="margin-bottom: var(--space-6); color: var(--color-muted)"
+          >
+            Are you sure you want to delete this custom category? This will also
+            delete all budgets for this category. This action cannot be undone.
+          </p>
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn--secondary delete-category-cancel"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn--danger"
+              id="deleteCategoryConfirmBtn"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================
+         TOAST NOTIFICATION SYSTEM
+    ================================================ -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="../JS/budgets.js"></script>
+  </body>
+</html>
