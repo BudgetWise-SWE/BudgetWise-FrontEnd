@@ -1,240 +1,4 @@
-/* ============================================================
-   BudgetWise — topbar-dashboard.css
-   ============================================================ */
-
-
-:root {
-  /* Brand */
-  --color-primary:           #006688;
-  --color-primary-container: #00c2ff;
-  --color-error:             #ba1a1a;
-
-  /* Surfaces */
-  --color-bg:                #f8f9fa;
-  --color-white:             #ffffff;
-  --color-border:            #e2e8f0;
-  --color-border-light:      #f1f5f9;
-
-  /* Text */
-  --color-on-surface:        #191c1d;
-  --color-on-primary:        #ffffff;
-  --color-muted:             #64748b;
-  --color-subtle:            #94a3b8;
-
-  /* Category colour pairs */
-  --color-orange-bg:    #fff7ed;
-  --color-orange-text:  #ea580c;
-  --color-purple-bg:    #faf5ff;
-  --color-purple-text:  #9333ea;
-  --color-blue-bg:      #eff6ff;
-  --color-blue-text:    #2563eb;
-  --color-emerald-bg:   #ecfdf5;
-  --color-emerald-text: #059669;
-  --color-red-bg:       #fef2f2;
-  --color-red-text:     #dc2626;
-
-  /* Layout */
-  --topbar-height:     64px;
-  --content-max-width: 1400px;
-
-  /* Spacing */
-  --space-1:  4px;
-  --space-2:  8px;
-  --space-3:  12px;
-  --space-4:  16px;
-  --space-5:  20px;
-  --space-6:  24px;
-  --space-8:  32px;
-  --space-10: 40px;
-  --space-12: 48px;
-
-  /* Radii */
-  --radius-sm:   8px;
-  --radius-md:   12px;
-  --radius-lg:   16px;
-  --radius-xl:   24px;
-  --radius-2xl:  32px;
-  --radius-full: 9999px;
-
-  /* Shadows */
-  --shadow-xs:      0 1px 3px rgba(0,0,0,.06);
-  --shadow-sm:      0 4px 20px rgba(0,0,0,.05);
-  --shadow-md:      0 8px 32px rgba(0,0,0,.08);
-  --shadow-primary: 0 4px 20px rgba(0,102,136,.15);
-
-  /* Typography */
-  --font-family:    'Plus Jakarta Sans', sans-serif;
-  --font-size-xs:   11px;
-  --font-size-sm:   13px;
-  --font-size-base: 16px;
-  --font-size-lg:   18px;
-  --font-size-xl:   24px;
-  --font-size-2xl:  36px;
-}
-
-
-/* ─── RESET ──────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-
-body {
-  font-family:      var(--font-family);
-  font-size:        var(--font-size-base);
-  line-height:      1.6;
-  font-weight:      500;
-  color:            var(--color-on-surface);
-  background-color: var(--color-bg);
-  -webkit-font-smoothing: antialiased;
-}
-
-img    { display: block; max-width: 100%; }
-button { font-family: inherit; cursor: pointer; border: none; background: none; }
-a      { text-decoration: none; color: inherit; }
-input, select, textarea { font-family: inherit; }
-
-
-/* ─── MATERIAL ICONS default variation ───────────────────────── */
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
-
-
-/* ─── GLASS UTILITY ──────────────────────────────────────────── */
-.glass-card {
-  background:              rgba(255, 255, 255, 0.7);
-  backdrop-filter:         blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border:                  1px solid rgba(255, 255, 255, 0.5);
-}
-
-
-/* ─── TOPBAR ─────────────────────────────────────────────────── */
-.topbar {
-  position:        fixed;
-  top:             0;
-  left:            0;
-  right:           0;
-  height:          var(--topbar-height);
-  background:      rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom:   1px solid var(--color-border-light);
-  box-shadow:      var(--shadow-xs);
-  display:         flex;
-  align-items:     center;
-  justify-content: space-between;
-  padding-inline:  var(--space-8);
-  z-index:         40;
-}
-
-.topbar-left {
-  display:     flex;
-  align-items: center;
-  gap:         var(--space-10);
-}
-
-/* Brand */
-.brand {
-  display:     flex;
-  align-items: center;
-  gap:         var(--space-3);
-  flex-shrink: 0;
-}
-
-.brand-icon {
-  width:            40px;
-  height:           40px;
-  border-radius:    var(--radius-sm);
-  background:       #00c2ff;
-  display:          flex;
-  align-items:      center;
-  justify-content:  center;
-  color:            #fff;
-}
-
-.brand-icon__symbol {
-  font-size: 22px;
-  font-variation-settings: 'FILL' 1;
-}
-
-.brand-name {
-  font-size:      var(--font-size-lg);
-  font-weight:    700;
-  letter-spacing: -0.03em;
-  color:          #0f172a;
-}
-
-/* Primary nav */
-.main-nav {
-  display:     none;
-  align-items: center;
-  gap:         2px;
-}
-
-@media (min-width: 768px) {
-  .main-nav { display: flex; }
-}
-
-.nav-item {
-  display:       flex;
-  align-items:   center;
-  gap:           var(--space-2);
-  padding:       var(--space-2) var(--space-3);
-  font-size:     var(--font-size-sm);
-  font-weight:   500;
-  color:         var(--color-muted);
-  border-radius: var(--radius-sm);
-  transition:    color .2s ease;
-  white-space:   nowrap;
-}
-.nav-item:hover { color: var(--color-primary); }
-
-.nav-item--active {
-  color:         #00c2ff;
-  font-weight:   600;
-  border-bottom: 2px solid #00c2ff;
-  padding-bottom: calc(var(--space-2) - 2px);
-}
-
-.nav-item__icon { font-size: 20px; }
-.nav-item__icon--filled { font-variation-settings: 'FILL' 1; }
-
-/* Right actions */
-.topbar-actions {
-  display:     flex;
-  align-items: center;
-  gap:         var(--space-4);
-}
-
-.topbar-btn {
-  display:     flex;
-  align-items: center;
-  color:       var(--color-muted);
-  transition:  color .2s ease;
-  font-size:   var(--font-size-sm);
-  font-weight: 500;
-}
-.topbar-btn:hover        { color: var(--color-primary); }
-.topbar-btn--danger      { color: var(--color-error); }
-.topbar-btn--danger:hover{ color: rgba(186,26,26,.8); }
-
-
-/* ─── PAGE LAYOUT ────────────────────────────────────────────── */
-.page-content {
-  padding-top: var(--topbar-height);
-  min-height:  100vh;
-  background:  var(--color-bg);
-}
-
-.page-inner {
-  padding:   var(--space-8);
-  max-width: var(--content-max-width);
-  margin:    0 auto;
-  display:   flex;
-  flex-direction: column;
-  gap:       var(--space-6);
-}
-
+/* transaction.css - page-specific styles only */
 
 /* ─── BALANCE BANNER ─────────────────────────────────────────── */
 .balance-banner {
@@ -242,7 +6,7 @@ input, select, textarea { font-family: inherit; }
   padding:       var(--space-6);
   background:    linear-gradient(135deg, #006688 0%, #004d67 100%);
   border-radius: var(--radius-2xl);
-  box-shadow:    var(--shadow-primary);
+  box-shadow:    0 4px 20px rgba(0, 102, 136, 0.15);
   position:      relative;
   overflow:      hidden;
 }
@@ -299,7 +63,6 @@ input, select, textarea { font-family: inherit; }
 
 .balance-banner__trend-icon { font-size: 18px; }
 
-
 /* ─── CONTENT GRID ───────────────────────────────────────────── */
 .content-grid {
   display:               grid;
@@ -310,16 +73,6 @@ input, select, textarea { font-family: inherit; }
 @media (min-width: 1024px) {
   .content-grid { grid-template-columns: 1fr 2fr; }
 }
-
-
-/* ─── PANEL SHARED ───────────────────────────────────────────── */
-.panel-title {
-  font-size:      var(--font-size-xl);
-  font-weight:    600;
-  letter-spacing: -0.01em;
-  color:          #0f172a;
-}
-
 
 /* ─── ADD EXPENSE FORM PANEL ─────────────────────────────────── */
 .form-panel {
@@ -336,33 +89,6 @@ input, select, textarea { font-family: inherit; }
   display:        flex;
   flex-direction: column;
   gap:            var(--space-6);
-}
-
-/* Field */
-.form-field { display: flex; flex-direction: column; gap: var(--space-2); }
-
-.form-label {
-  font-size:      12px;
-  font-weight:    700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color:          var(--color-muted);
-}
-
-.form-input {
-  width:         100%;
-  padding:       16px;
-  background:    var(--color-white);
-  border:        1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  font-size:     var(--font-size-base);
-  color:         var(--color-on-surface);
-  outline:       none;
-  transition:    border-color .2s ease, box-shadow .2s ease;
-}
-.form-input:focus {
-  border-color: var(--color-primary);
-  box-shadow:   0 0 0 4px rgba(0, 102, 136, .08);
 }
 
 /* Amount prefix */
@@ -383,13 +109,7 @@ input, select, textarea { font-family: inherit; }
   font-weight:  700;
 }
 
-/* Select */
-.form-select { appearance: none; -webkit-appearance: none; cursor: pointer; }
-
-/* Textarea */
-.form-textarea { resize: none; }
-
-/* Submit */
+/* Submit Button */
 .btn-submit {
   width:           100%;
   padding:         16px;
