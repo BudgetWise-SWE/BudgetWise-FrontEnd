@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZenBudget - Savings Goals</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="../CSS/shared.css" />
+    <link rel="stylesheet" href="../CSS/savings.css" />
+  </head>
+  <body>
+    <!-- TOP NAVIGATION -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="brand">
+          <div class="brand-icon">
+            <span class="material-symbols-outlined brand-icon__symbol"
+              >account_balance_wallet</span
+            >
+          </div>
+          <h1 class="brand-name">ZenBudget</h1>
+        </div>
+
+        <nav class="main-nav">
+          <a href="dashboard.html" class="nav-item">
+            <span class="material-symbols-outlined nav-item__icon"
+              >dashboard</span
+            >
+            <span>Dashboard</span>
+          </a>
+          <a href="transaction.html" class="nav-item">
+            <span class="material-symbols-outlined nav-item__icon"
+              >payments</span
+            >
+            <span>Transactions</span>
+          </a>
+          <a href="budgets.html" class="nav-item">
+            <span class="material-symbols-outlined nav-item__icon"
+              >account_balance_wallet</span
+            >
+            <span>Budgets</span>
+          </a>
+          <a href="savings.html" class="nav-item nav-item--active">
+            <span class="material-symbols-outlined nav-item__icon"
+              >savings</span
+            >
+            <span>Savings Goals</span>
+          </a>
+          <a href="history.html" class="nav-item">
+            <span class="material-symbols-outlined nav-item__icon"
+              >history</span
+            >
+            <span>History</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="topbar-right">
+        <button class="topbar-icon-btn" aria-label="Notifications">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <div class="topbar-divider"></div>
+        <div class="topbar-avatar">
+          <img
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoVizDtGMpABWijFWxrqDSF6-OT84AC4WPKs37kznCAo8sIrU-aWGMkU5hSmfK_S4lNgdZt8qUaY0wk3mmhJWO4zEDancsXUWwTMUdXQy8a3toITpkaoevPHvi_upeGjSq6NjyYJSTR8GkizXNrMevh-29nDr-IDxZ2eHC7L7hSUi8C1jhHJpdwTquDAGAJgPU0LOPA8lBexz7MRiMP1JpftlvdC_M52tYiHThVFkEZ6nAICzlJg8Rcvj0KtOL3nJCr0NnFJbeP2Y"
+            alt="User profile"
+            class="topbar-avatar__img"
+          />
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="page-content">
+      <div class="page-inner">
+        <!-- Page Header -->
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Savings Goals</h1>
+            <p class="page-subtitle">
+              Track your progress toward financial freedom
+            </p>
+          </div>
+          <button class="btn btn--primary" id="createGoalBtn">
+            <span class="material-symbols-outlined">add</span>
+            New Savings Goal
+          </button>
+        </div>
+
+        <!-- Savings Summary -->
+        <div class="savings-summary-grid">
+          <div class="summary-card summary-card--total">
+            <span class="material-symbols-outlined summary-card__icon"
+              >savings</span
+            >
+            <div class="summary-card__content">
+              <p class="summary-card__label">Total Saved</p>
+              <h3 class="summary-card__value">$8,450</h3>
+            </div>
+          </div>
+          <div class="summary-card summary-card--target">
+            <span class="material-symbols-outlined summary-card__icon"
+              >flag</span
+            >
+            <div class="summary-card__content">
+              <p class="summary-card__label">Total Goals</p>
+              <h3 class="summary-card__value">$25,000</h3>
+            </div>
+          </div>
+          <div class="summary-card summary-card--progress">
+            <span class="material-symbols-outlined summary-card__icon"
+              >trending_up</span
+            >
+            <div class="summary-card__content">
+              <p class="summary-card__label">Overall Progress</p>
+              <h3 class="summary-card__value">33.8%</h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- Goals Grid -->
+        <div class="goals-grid">
+          <!-- Goal 1 - Emergency Fund -->
+          <div class="goal-card">
+            <div class="goal-card__header">
+              <div class="goal-card__icon goal-card__icon--emergency">
+                <span class="material-symbols-outlined">security</span>
+              </div>
+              <div class="goal-card__info">
+                <h4 class="goal-card__name">Emergency Fund</h4>
+                <p class="goal-card__deadline">Target: Dec 2026</p>
+              </div>
+              <button class="goal-card__menu">
+                <span class="material-symbols-outlined">more_vert</span>
+              </button>
+            </div>
+            <div class="goal-card__progress">
+              <div class="progress-ring">
+                <svg viewBox="0 0 100 100" class="progress-svg">
+                  <circle cx="50" cy="50" r="45" class="progress-bg" />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    class="progress-fill"
+                    style="stroke-dasharray: 283; stroke-dashoffset: 170"
+                  />
+                </svg>
+                <span class="progress-percentage">40%</span>
+              </div>
+              <div class="goal-stats">
+                <div class="goal-amount">
+                  <span class="saved">$4,000 saved</span>
+                  <span class="target">of $10,000</span>
+                </div>
+                <div class="progress-bar-mini">
+                  <div class="progress-fill-mini" style="width: 40%"></div>
+                </div>
+              </div>
+            </div>
+            <div class="goal-card__footer">
+              <button class="btn-add-funds">
+                <span class="material-symbols-outlined">add</span>
+                Add Funds
+              </button>
+              <span class="goal-status">🏃 In Progress</span>
+            </div>
+          </div>
+
+          <!-- Goal 2 - Vacation -->
+          <div class="goal-card">
+            <div class="goal-card__header">
+              <div class="goal-card__icon goal-card__icon--vacation">
+                <span class="material-symbols-outlined">beach_access</span>
+              </div>
+              <div class="goal-card__info">
+                <h4 class="goal-card__name">Europe Vacation</h4>
+                <p class="goal-card__deadline">Target: Aug 2026</p>
+              </div>
+              <button class="goal-card__menu">
+                <span class="material-symbols-outlined">more_vert</span>
+              </button>
+            </div>
+            <div class="goal-card__progress">
+              <div class="progress-ring">
+                <svg viewBox="0 0 100 100" class="progress-svg">
+                  <circle cx="50" cy="50" r="45" class="progress-bg" />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    class="progress-fill"
+                    style="stroke-dasharray: 283; stroke-dashoffset: 85"
+                  />
+                </svg>
+                <span class="progress-percentage">70%</span>
+              </div>
+              <div class="goal-stats">
+                <div class="goal-amount">
+                  <span class="saved">$2,100 saved</span>
+                  <span class="target">of $3,000</span>
+                </div>
+                <div class="progress-bar-mini">
+                  <div class="progress-fill-mini" style="width: 70%"></div>
+                </div>
+              </div>
+            </div>
+            <div class="goal-card__footer">
+              <button class="btn-add-funds">
+                <span class="material-symbols-outlined">add</span>
+                Add Funds
+              </button>
+              <span class="goal-status">🔥 Almost there!</span>
+            </div>
+          </div>
+
+          <!-- Goal 3 - New Laptop -->
+          <div class="goal-card">
+            <div class="goal-card__header">
+              <div class="goal-card__icon goal-card__icon--tech">
+                <span class="material-symbols-outlined">computer</span>
+              </div>
+              <div class="goal-card__info">
+                <h4 class="goal-card__name">New MacBook Pro</h4>
+                <p class="goal-card__deadline">Target: Oct 2026</p>
+              </div>
+              <button class="goal-card__menu">
+                <span class="material-symbols-outlined">more_vert</span>
+              </button>
+            </div>
+            <div class="goal-card__progress">
+              <div class="progress-ring">
+                <svg viewBox="0 0 100 100" class="progress-svg">
+                  <circle cx="50" cy="50" r="45" class="progress-bg" />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    class="progress-fill"
+                    style="stroke-dasharray: 283; stroke-dashoffset: 226"
+                  />
+                </svg>
+                <span class="progress-percentage">20%</span>
+              </div>
+              <div class="goal-stats">
+                <div class="goal-amount">
+                  <span class="saved">$600 saved</span>
+                  <span class="target">of $3,000</span>
+                </div>
+                <div class="progress-bar-mini">
+                  <div class="progress-fill-mini" style="width: 20%"></div>
+                </div>
+              </div>
+            </div>
+            <div class="goal-card__footer">
+              <button class="btn-add-funds">
+                <span class="material-symbols-outlined">add</span>
+                Add Funds
+              </button>
+              <span class="goal-status">🌱 Just started</span>
+            </div>
+          </div>
+
+          <!-- Goal 4 - Down Payment (Completed) -->
+          <div class="goal-card goal-card--completed">
+            <div class="goal-card__header">
+              <div class="goal-card__icon goal-card__icon--home">
+                <span class="material-symbols-outlined">home</span>
+              </div>
+              <div class="goal-card__info">
+                <h4 class="goal-card__name">House Down Payment</h4>
+                <p class="goal-card__deadline">Completed!</p>
+              </div>
+              <button class="goal-card__menu">
+                <span class="material-symbols-outlined">more_vert</span>
+              </button>
+            </div>
+            <div class="goal-card__progress">
+              <div class="progress-ring">
+                <svg viewBox="0 0 100 100" class="progress-svg">
+                  <circle cx="50" cy="50" r="45" class="progress-bg" />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    class="progress-fill"
+                    style="stroke-dasharray: 283; stroke-dashoffset: 0"
+                  />
+                </svg>
+                <span class="progress-percentage">100%</span>
+              </div>
+              <div class="goal-stats">
+                <div class="goal-amount">
+                  <span class="saved">$20,000 saved</span>
+                  <span class="target">of $20,000</span>
+                </div>
+                <div class="progress-bar-mini">
+                  <div class="progress-fill-mini" style="width: 100%"></div>
+                </div>
+              </div>
+            </div>
+            <div class="goal-card__footer">
+              <span class="goal-status goal-status--completed"
+                >✅ Completed!</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Create Goal Modal -->
+    <div class="modal" id="createGoalModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Create Savings Goal</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <form class="modal-form" id="goalForm">
+          <div class="form-field">
+            <label class="form-label">Goal Name</label>
+            <input
+              type="text"
+              class="form-input"
+              placeholder="e.g., Emergency Fund"
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Target Amount ($)</label>
+            <input
+              type="number"
+              class="form-input"
+              placeholder="Enter target amount"
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Initial Deposit ($)</label>
+            <input
+              type="number"
+              class="form-input"
+              placeholder="Starting amount"
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Target Date</label>
+            <input type="month" class="form-input" />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn--secondary cancel-btn">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn--primary">Create Goal</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="toast-container" id="toastContainer"></div>
+    <script src="../JS/savings.js"></script>
+  </body>
+</html>
