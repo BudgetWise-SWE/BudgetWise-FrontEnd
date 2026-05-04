@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZenBudget - Transaction History</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="../CSS/shared.css" />
+    <link rel="stylesheet" href="../CSS/history.css" />
+  </head>
+  <body>
+    <!-- TOP NAVIGATION -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="brand">
+          <div class="brand-icon">
+            <span class="material-symbols-outlined brand-icon__symbol"
+              >account_balance_wallet</span
+            >
+          </div>
+          <h1 class="brand-name">ZenBudget</h1>
+        </div>
+
+        <nav class="main-nav">
+          <a href="dashboard.html" class="nav-item">
+            <span class="material-symbols-outlined nav-item__icon"
+              >dashboard</span
+            >
+            <span>Dashboard</span>
+          </a>
+          <a href="transaction.html" class="nav-item">
+            <span class="material-symbols-outlined nav-item__icon"
+              >payments</span
+            >
+            <span>Transactions</span>
+          </a>
+          <a href="budgets.html" class="nav-item">
+            <span class="material-symbols-outlined nav-item__icon"
+              >account_balance_wallet</span
+            >
+            <span>Budgets</span>
+          </a>
+          <a href="savings.html" class="nav-item">
+            <span class="material-symbols-outlined nav-item__icon"
+              >savings</span
+            >
+            <span>Savings Goals</span>
+          </a>
+          <a href="history.html" class="nav-item nav-item--active">
+            <span class="material-symbols-outlined nav-item__icon"
+              >history</span
+            >
+            <span>History</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="topbar-right">
+        <button class="topbar-icon-btn" aria-label="Notifications">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <div class="topbar-divider"></div>
+        <div class="topbar-avatar">
+          <img
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoVizDtGMpABWijFWxrqDSF6-OT84AC4WPKs37kznCAo8sIrU-aWGMkU5hSmfK_S4lNgdZt8qUaY0wk3mmhJWO4zEDancsXUWwTMUdXQy8a3toITpkaoevPHvi_upeGjSq6NjyYJSTR8GkizXNrMevh-29nDr-IDxZ2eHC7L7hSUi8C1jhHJpdwTquDAGAJgPU0LOPA8lBexz7MRiMP1JpftlvdC_M52tYiHThVFkEZ6nAICzlJg8Rcvj0KtOL3nJCr0NnFJbeP2Y"
+            alt="User profile"
+            class="topbar-avatar__img"
+          />
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="page-content">
+      <div class="page-inner">
+        <!-- Page Header -->
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Transaction History</h1>
+            <p class="page-subtitle">
+              View, search, and export all your transactions
+            </p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn--secondary" id="exportBtn">
+              <span class="material-symbols-outlined">download</span>
+              Export Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters Bar -->
+        <div class="filters-bar">
+          <div class="filter-group">
+            <span class="material-symbols-outlined">search</span>
+            <input
+              type="text"
+              placeholder="Search transactions..."
+              class="search-input"
+              id="searchInput"
+            />
+          </div>
+          <div class="filter-group">
+            <select class="filter-select" id="categoryFilter">
+              <option value="">All Categories</option>
+              <option>Income</option>
+              <option>Dining & Drinks</option>
+              <option>Shopping</option>
+              <option>Transportation</option>
+              <option>Utilities</option>
+              <option>Entertainment</option>
+              <option>Health</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <input
+              type="date"
+              class="filter-date"
+              id="dateFrom"
+              placeholder="From"
+            />
+            <span class="date-sep">—</span>
+            <input
+              type="date"
+              class="filter-date"
+              id="dateTo"
+              placeholder="To"
+            />
+          </div>
+          <div class="filter-group">
+            <select class="filter-select" id="typeFilter">
+              <option value="">All Types</option>
+              <option value="credit">Income Only</option>
+              <option value="debit">Expenses Only</option>
+            </select>
+          </div>
+          <button class="btn-filter-reset" id="resetFilters">
+            <span class="material-symbols-outlined">refresh</span>
+            Reset
+          </button>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="history-summary">
+          <div class="summary-stat">
+            <span class="stat-label">Total Transactions</span>
+            <span class="stat-value" id="totalTransactions">1,284</span>
+          </div>
+          <div class="summary-stat">
+            <span class="stat-label">Total Income</span>
+            <span class="stat-value stat-income" id="totalIncome"
+              >$8,540.00</span
+            >
+          </div>
+          <div class="summary-stat">
+            <span class="stat-label">Total Expenses</span>
+            <span class="stat-value stat-expense" id="totalExpenses"
+              >-$3,210.50</span
+            >
+          </div>
+          <div class="summary-stat">
+            <span class="stat-label">Net Balance</span>
+            <span class="stat-value stat-net" id="netBalance">$5,329.50</span>
+          </div>
+        </div>
+
+        <!-- Transactions Table (NO ACTIONS COLUMN) -->
+        <div class="transactions-panel">
+          <div class="table-wrap">
+            <table class="tx-table" id="historyTable">
+              <thead>
+                <tr>
+                  <th class="tx-table__th">Transaction</th>
+                  <th class="tx-table__th">Category</th>
+                  <th class="tx-table__th">Date</th>
+                  <th class="tx-table__th tx-table__th--right">Amount</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <!-- Row 1 -->
+                <tr class="tx-row">
+                  <td class="tx-table__td">
+                    <div class="tx-desc">
+                      <div class="tx-icon tx-icon--orange">
+                        <span class="material-symbols-outlined"
+                          >restaurant</span
+                        >
+                      </div>
+                      <div class="tx-desc__text">
+                        <p class="tx-desc__name">Sweetgreen Salad</p>
+                        <p class="tx-desc__note">Card ending in 4242</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="tx-table__td">
+                    <span class="tx-category">Dining & Drinks</span>
+                  </td>
+                  <td class="tx-table__td">Jun 14, 2023</td>
+                  <td class="tx-table__td tx-table__td--right">
+                    <span class="tx-amount tx-amount--debit">-$18.50</span>
+                  </td>
+                </tr>
+
+                <!-- Row 2 -->
+                <tr class="tx-row">
+                  <td class="tx-table__td">
+                    <div class="tx-desc">
+                      <div class="tx-icon tx-icon--blue">
+                        <span class="material-symbols-outlined">work</span>
+                      </div>
+                      <div class="tx-desc__text">
+                        <p class="tx-desc__name">Tech Corp Salary</p>
+                        <p class="tx-desc__note">Direct Deposit</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="tx-table__td">
+                    <span class="tx-category">Income</span>
+                  </td>
+                  <td class="tx-table__td">Jun 12, 2023</td>
+                  <td class="tx-table__td tx-table__td--right">
+                    <span class="tx-amount tx-amount--credit">+$4,250.00</span>
+                  </td>
+                </tr>
+
+                <!-- Row 3 -->
+                <tr class="tx-row">
+                  <td class="tx-table__td">
+                    <div class="tx-desc">
+                      <div class="tx-icon tx-icon--purple">
+                        <span class="material-symbols-outlined">bolt</span>
+                      </div>
+                      <div class="tx-desc__text">
+                        <p class="tx-desc__name">City Electric Co.</p>
+                        <p class="tx-desc__note">Utility Bill</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="tx-table__td">
+                    <span class="tx-category">Utilities</span>
+                  </td>
+                  <td class="tx-table__td">Jun 10, 2023</td>
+                  <td class="tx-table__td tx-table__td--right">
+                    <span class="tx-amount tx-amount--debit">-$142.00</span>
+                  </td>
+                </tr>
+
+                <!-- Row 4 -->
+                <tr class="tx-row">
+                  <td class="tx-table__td">
+                    <div class="tx-desc">
+                      <div class="tx-icon tx-icon--blue">
+                        <span class="material-symbols-outlined"
+                          >shopping_bag</span
+                        >
+                      </div>
+                      <div class="tx-desc__text">
+                        <p class="tx-desc__name">Apple Store</p>
+                        <p class="tx-desc__note">Subscription - iCloud+</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="tx-table__td">
+                    <span class="tx-category">Shopping</span>
+                  </td>
+                  <td class="tx-table__td">Jun 08, 2023</td>
+                  <td class="tx-table__td tx-table__td--right">
+                    <span class="tx-amount tx-amount--debit">-$9.99</span>
+                  </td>
+                </tr>
+
+                <!-- Row 5 - Freelance Income -->
+                <tr class="tx-row">
+                  <td class="tx-table__td">
+                    <div class="tx-desc">
+                      <div class="tx-icon tx-icon--emerald">
+                        <span class="material-symbols-outlined"
+                          >design_services</span
+                        >
+                      </div>
+                      <div class="tx-desc__text">
+                        <p class="tx-desc__name">Freelance Project</p>
+                        <p class="tx-desc__note">Website design for client</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="tx-table__td">
+                    <span class="tx-category">Income</span>
+                  </td>
+                  <td class="tx-table__td">Jun 05, 2023</td>
+                  <td class="tx-table__td tx-table__td--right">
+                    <span class="tx-amount tx-amount--credit">+$1,200.00</span>
+                  </td>
+                </tr>
+
+                <!-- Row 6 - Netflix -->
+                <tr class="tx-row">
+                  <td class="tx-table__td">
+                    <div class="tx-desc">
+                      <div class="tx-icon tx-icon--red">
+                        <span class="material-symbols-outlined">movie</span>
+                      </div>
+                      <div class="tx-desc__text">
+                        <p class="tx-desc__name">Netflix</p>
+                        <p class="tx-desc__note">Monthly subscription</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="tx-table__td">
+                    <span class="tx-category">Entertainment</span>
+                  </td>
+                  <td class="tx-table__td">Jun 04, 2023</td>
+                  <td class="tx-table__td tx-table__td--right">
+                    <span class="tx-amount tx-amount--debit">-$15.99</span>
+                  </td>
+                </tr>
+
+                <!-- Row 7 - Groceries -->
+                <tr class="tx-row">
+                  <td class="tx-table__td">
+                    <div class="tx-desc">
+                      <div class="tx-icon tx-icon--orange">
+                        <span class="material-symbols-outlined"
+                          >local_grocery_store</span
+                        >
+                      </div>
+                      <div class="tx-desc__text">
+                        <p class="tx-desc__name">Whole Foods Market</p>
+                        <p class="tx-desc__note">Weekly groceries</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="tx-table__td">
+                    <span class="tx-category">Dining & Drinks</span>
+                  </td>
+                  <td class="tx-table__td">Jun 03, 2023</td>
+                  <td class="tx-table__td tx-table__td--right">
+                    <span class="tx-amount tx-amount--debit">-$89.47</span>
+                  </td>
+                </tr>
+
+                <!-- Row 8 - Spotify -->
+                <tr class="tx-row">
+                  <td class="tx-table__td">
+                    <div class="tx-desc">
+                      <div class="tx-icon tx-icon--green">
+                        <span class="material-symbols-outlined"
+                          >music_note</span
+                        >
+                      </div>
+                      <div class="tx-desc__text">
+                        <p class="tx-desc__name">Spotify</p>
+                        <p class="tx-desc__note">Premium subscription</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="tx-table__td">
+                    <span class="tx-category">Entertainment</span>
+                  </td>
+                  <td class="tx-table__td">Jun 01, 2023</td>
+                  <td class="tx-table__td tx-table__td--right">
+                    <span class="tx-amount tx-amount--debit">-$10.99</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination">
+            <p class="pagination__info">Showing 1-8 of 1,284 transactions</p>
+            <div class="pagination__controls">
+              <button class="pagination__btn" disabled>Previous</button>
+              <button class="pagination__btn pagination__btn--active">1</button>
+              <button class="pagination__btn">2</button>
+              <button class="pagination__btn">3</button>
+              <button class="pagination__btn">4</button>
+              <button class="pagination__btn">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="../JS/history.js"></script>
+  </body>
+</html>
