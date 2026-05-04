@@ -11,13 +11,14 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="../CSS/transaction.css" />
+  <link rel="stylesheet" href="../CSS/global.css" />
 </head>
 <body>
 
   <!-- ================================================
        TOP NAVIGATION
   ================================================ -->
-  <header class="topbar">
+ <header class="topbar">
     <div class="topbar-left">
 
       <!-- Brand -->
@@ -30,12 +31,12 @@
 
       <!-- Primary Nav -->
       <nav class="main-nav">
-        <a href="dashboard.html" class="nav-item">
+        <a href="dashboard.html" class="nav-item ">
           <span class="material-symbols-outlined nav-item__icon">dashboard</span>
           <span>Dashboard</span>
         </a>
         <a href="transaction.html" class="nav-item nav-item--active">
-          <span class="material-symbols-outlined nav-item__icon nav-item__icon--filled">payments</span>
+          <span class="material-symbols-outlined nav-item__icon">payments</span>
           <span>Transactions</span>
         </a>
         <a href="#" class="nav-item">
@@ -55,13 +56,18 @@
     </div>
 
     <!-- Right Actions -->
-    <div class="topbar-actions">
-      <button class="topbar-btn" aria-label="Settings">
-        <span class="material-symbols-outlined">settings</span>
+    <div class="topbar-right">
+      <button class="topbar-icon-btn" aria-label="Notifications">
+        <span class="material-symbols-outlined">notifications</span>
       </button>
-      <button class="topbar-btn topbar-btn--danger" aria-label="Logout">
-        <span class="material-symbols-outlined">logout</span>
-      </button>
+      <div class="topbar-divider" aria-hidden="true"></div>
+      <div class="topbar-avatar">
+        <img
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoVizDtGMpABWijFWxrqDSF6-OT84AC4WPKs37kznCAo8sIrU-aWGMkU5hSmfK_S4lNgdZt8qUaY0wk3mmhJWO4zEDancsXUWwTMUdXQy8a3toITpkaoevPHvi_upeGjSq6NjyYJSTR8GkizXNrMevh-29nDr-IDxZ2eHC7L7hSUi8C1jhHJpdwTquDAGAJgPU0LOPA8lBexz7MRiMP1JpftlvdC_M52tYiHThVFkEZ6nAICzlJg8Rcvj0KtOL3nJCr0NnFJbeP2Y"
+          alt="User profile"
+          class="topbar-avatar__img"
+        />
+      </div>
     </div>
   </header>
 
@@ -79,7 +85,7 @@
         </div>
         <div class="balance-banner__body">
           <p class="balance-banner__label">Total Balance</p>
-          <h3 class="balance-banner__amount">$12,450.80</h3>
+          <h3 id =total_balance class="balance-banner__amount">$0</h3>
           <div class="balance-banner__trend">
             <span class="material-symbols-outlined balance-banner__trend-icon">trending_up</span>
             <span>+12.5% from last month</span>
@@ -93,9 +99,40 @@
 
         <!-- Add Expense Form -->
         <aside class="form-panel glass-card">
-          <h4 class="panel-title">Add Expense</h4>
+          <h4 class="panel-title">Add Transaction</h4>
 
-          <form class="expense-form">
+          <form id = "transaction-form" class="expense-form">
+
+
+            <div class="form-field">
+              <label class="form-label" for="type">Type</label>
+              <div class="name-wrap">
+                <select
+                  id="type"
+                  type="text"
+                  class="form-input"
+                  placeholder="Expense"
+                >
+                <option>Expense</option>
+                <option>Income</option>
+              </select>
+              </div>
+            </div>
+
+
+
+            <div class="form-field">
+              <label class="form-label" for="name">Name</label>
+              <div class="name-wrap">
+                <input
+                  id="name"
+                  type="text"
+                  min="0"
+                  class="form-input"
+                  placeholder="Apple Store"
+                />
+              </div>
+            </div>
 
             <div class="form-field">
               <label class="form-label" for="amount">Amount</label>
@@ -104,6 +141,7 @@
                 <input
                   id="amount"
                   type="number"
+                  min="0"
                   class="form-input amount-wrap__input"
                   placeholder="0.00"
                 />
@@ -153,15 +191,7 @@
           <div class="transactions-header">
             <div class="transactions-header__copy">
               <h4 class="panel-title">Recent Transactions</h4>
-              <p class="transactions-header__sub">Showing last 24 transactions</p>
-            </div>
-            <div class="transactions-header__actions">
-              <button class="icon-btn">
-                <span class="material-symbols-outlined">filter_list</span>
-              </button>
-              <button class="icon-btn">
-                <span class="material-symbols-outlined">download</span>
-              </button>
+              <p class="transactions-header__sub">Showing last 5 transactions</p>
             </div>
           </div>
 
@@ -182,7 +212,7 @@
                 <tr class="tx-row">
                   <td class="tx-table__td">
                     <div class="tx-desc">
-                      <div class="tx-icon tx-icon--orange">
+                      <div  class="tx-icon tx-icon--orange">
                         <span class="material-symbols-outlined">restaurant</span>
                       </div>
                       <div class="tx-desc__text">
@@ -197,6 +227,7 @@
                   <td class="tx-table__td tx-table__td--date">Today, 09:15 AM</td>
                   <td class="tx-table__td tx-table__td--amount">-$24.50</td>
                 </tr>
+                
 
                 <!-- Row 2 -->
                 <tr class="tx-row">
@@ -304,6 +335,6 @@
   <button class="fab" aria-label="Add transaction">
     <span class="material-symbols-outlined fab__icon">add</span>
   </button>
-
+<script src="../JS/transaction.js"></script>
 </body>
 </html>
