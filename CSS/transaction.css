@@ -418,6 +418,7 @@ input, select, textarea { font-family: inherit; }
   overflow:       hidden;
   display:        flex;
   flex-direction: column;
+  justify-content: start;
 }
 
 /* Panel header */
@@ -527,6 +528,7 @@ input, select, textarea { font-family: inherit; }
   justify-content: space-between;
   padding:         var(--space-6);
   border-top:      1px solid #f8fafc;
+  margin-top: auto;
 }
 
 .pagination__info { font-size: var(--font-size-sm); color: var(--color-muted); }
