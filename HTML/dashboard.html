@@ -97,7 +97,7 @@
             <span class="metric-card__badge">+4.2%</span>
           </div>
           <p class="metric-card__label">Total Income</p>
-          <h4 class="metric-card__value">$8,540.00</h4>
+          <h4 id= "total-income" class="metric-card__value">$0</h4>
           <div class="metric-card__bar-track">
             <div class="metric-card__bar metric-card__bar--75"></div>
           </div>
@@ -113,7 +113,7 @@
             <span class="metric-card__badge metric-card__badge--pink">-2.1%</span>
           </div>
           <p class="metric-card__label">Total Expenses</p>
-          <h4 class="metric-card__value">$3,210.50</h4>
+          <h4  id= "total-expenses" class="metric-card__value">$3,210.50</h4>
           <div class="metric-card__bar-track">
             <div class="metric-card__bar metric-card__bar--40"></div>
           </div>
@@ -128,8 +128,8 @@
             </div>
             <span class="metric-card__badge">Safe</span>
           </div>
-          <p class="metric-card__label">Remaining Balance</p>
-          <h4 class="metric-card__value">$5,329.50</h4>
+          <p  class="metric-card__label">Remaining Balance</p>
+          <h4  id= "remaining" class="metric-card__value">$0</h4>
           <div class="metric-card__dots">
             <div class="metric-card__dot metric-card__dot--on"></div>
             <div class="metric-card__dot metric-card__dot--off"></div>
@@ -147,7 +147,7 @@
             <span class="metric-card__badge">+15%</span>
           </div>
           <p class="metric-card__label">Total Transactions</p>
-          <h4 class="metric-card__value">1,284</h4>
+          <h4   id= "num-of-trans" class="metric-card__value">1,284</h4>
           <div class="metric-card__bar-track">
             <div class="metric-card__bar metric-card__bar--100"></div>
           </div>
@@ -171,13 +171,13 @@
                 <th class="tx-table__th">Transaction</th>
                 <th class="tx-table__th">Category</th>
                 <th class="tx-table__th">Date</th>
-                <th class="tx-table__th tx-table__th--right">Amount</th>
+                <th class="tx-table__th ">Amount</th>
               </tr>
             </thead>
             <tbody>
 
               <!-- Row 1 -->
-              <tr class="tx-row">
+              <!-- <tr class="tx-row">
                 <td class="tx-table__td">
                   <div class="tx-desc">
                     <div class="tx-icon tx-icon--orange">
@@ -198,10 +198,10 @@
                 <td class="tx-table__td tx-table__td--right">
                   <span class="tx-amount tx-amount--debit">-$18.50</span>
                 </td>
-              </tr>
+              </tr> -->
 
               <!-- Row 2 -->
-              <tr class="tx-row">
+              <!-- <tr class="tx-row">
                 <td class="tx-table__td">
                   <div class="tx-desc">
                     <div class="tx-icon tx-icon--blue">
@@ -222,10 +222,10 @@
                 <td class="tx-table__td tx-table__td--right">
                   <span class="tx-amount tx-amount--credit">+$4,250.00</span>
                 </td>
-              </tr>
+              </tr> -->
 
               <!-- Row 3 -->
-              <tr class="tx-row">
+              <!-- <tr class="tx-row">
                 <td class="tx-table__td">
                   <div class="tx-desc">
                     <div class="tx-icon tx-icon--purple">
@@ -246,10 +246,10 @@
                 <td class="tx-table__td tx-table__td--right">
                   <span class="tx-amount tx-amount--debit">-$142.00</span>
                 </td>
-              </tr>
+              </tr> -->
 
               <!-- Row 4 -->
-              <tr class="tx-row">
+              <!-- <tr class="tx-row">
                 <td class="tx-table__td">
                   <div class="tx-desc">
                     <div class="tx-icon tx-icon--blue">
@@ -270,7 +270,7 @@
                 <td class="tx-table__td tx-table__td--right">
                   <span class="tx-amount tx-amount--debit">-$9.99</span>
                 </td>
-              </tr>
+              </tr> -->
 
             </tbody>
           </table>
@@ -280,6 +280,7 @@
 
     </div>
   </main>
+<script type="module" src="../JS/dashboard.js"></script>
 
 </body>
 </html>
