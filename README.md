@@ -1,128 +1,93 @@
-# 💰 Personal Budgeting System
+# 💰 Personal Budgeting System – Frontend
 
-A web-based application that helps users manage their personal finances by tracking income, expenses, budgets, and savings goals. The system provides insights through dashboards, reports, and alerts to support better financial decisions.
+This project is the **frontend implementation** of a Personal Budgeting Web Application. It provides users with an interactive interface to manage their finances, including tracking income, expenses, budgets, and savings goals.
 
 ---
 
 ## 📌 Features
 
-### 🔐 Authentication
+### 🔐 Authentication UI
 
-* User registration (name, email, password)
-* Secure login
-* Error handling for invalid credentials
+* Login and registration forms
+* Client-side validation for user inputs
+* Error handling and feedback messages
 
-### 💵 Income Management
+### 💵 Income & Expense Management
 
-* Add income (amount, source, date)
-* Automatic balance updates
+* Add and display income and expense records
+* Categorized expense tracking
+* Dynamic transaction list rendering
 
-### 💸 Expense Management
+### 📊 Dashboard
 
-* Add expenses (amount, category, notes)
-* Expense categorization
-* Real-time expense tracking
-
-### 🗂️ Category Management
-
-* Predefined categories
-* Create, edit, and delete custom categories
-
-### 📊 Budget Management
-
-* Create monthly budgets
-* Set category-based spending limits
-* Automatic budget tracking
+* Overview of total income, expenses, and balance
+* Recent transactions display
+* Visual summaries using charts
 
 ### 📉 Budget Tracking
 
-* Remaining budget calculation
-* Alerts for exceeding limits
-
-### 📈 Reports & Analytics
-
-* Monthly financial summaries
-* Charts and visualizations
+* Display budget limits and usage
+* Visual indicators for budget status
 
 ### 🎯 Savings Goals
 
-* Create savings targets
-* Track progress percentage
+* UI for creating and tracking savings goals
+* Progress display (percentage or progress bars)
 
 ### 📜 Transaction History
 
-* View all transactions
-* Filter by date and category
-
-### 🏠 Dashboard
-
-* Overview of income, expenses, and balance
-* Recent transactions display
+* List all transactions
+* Filter by category or date (UI level)
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ Architecture (Frontend)
 
-The system follows the **C4 Model**:
+The project follows a modular frontend structure:
 
-* **Level 1 (Context):** User interacts with the system
-* **Level 2 (Container):**
-
-  * Web Application (Frontend)
-  * Backend API
-  * Database
-* **Level 3 (Component):**
-
-  * Auth, Transactions, Budget, Goals, Reports, Profile modules
+* **UI Components:** Forms, tables, cards, charts
+* **State Handling:** JavaScript-based state updates
+* **API Integration:** Fetching and sending data via REST APIs
+* **Separation of Concerns:** Organized into reusable components and services
 
 ---
 
 ## ⚙️ Tech Stack
 
-### Frontend
+* HTML5
+* CSS3 (Flexbox / Grid)
+* JavaScript (Vanilla JS)
 
-* React.js
-* HTML, CSS, JavaScript
+### Optional Libraries (if used)
 
-### Backend
-
-* Django REST Framework
-
-### Database
-
-* PostgreSQL
-
-### External Services
-
-* Email System (SMTP) for notifications
+* Chart.js (for data visualization)
+* Bootstrap / Tailwind (for styling)
 
 ---
 
 ## 📂 Project Structure
 
-```
-personal-budgeting-system/
+```id="6wr7w9"
+frontend/
 │
-├── frontend/
-│   ├── components/
-│   ├── pages/
-│   └── services/
+├── css/
+│   └── styles.css
 │
-├── backend/
-│   ├── auth/
-│   ├── transactions/
-│   ├── budgets/
-│   ├── goals/
-│   └── reports/
+├── js/
+│   ├── main.js
+│   ├── transactions.js
+│   └── utils.js
 │
-├── database/
+├── pages/
+│   ├── dashboard.html
+│   ├── transactions.html
+│   ├── budget.html
+│   └── goals.html
 │
-├── diagrams/
-│   ├── context.puml
-│   ├── container.puml
-│   └── component.puml
+├── assets/
+│   └── images/
 │
-└── README.md
+└── index.html
 ```
 
 ---
@@ -131,81 +96,67 @@ personal-budgeting-system/
 
 ### 🔹 Prerequisites
 
-* Node.js
-* Python 3.x
-* PostgreSQL
+* Web browser (Chrome, Edge, Firefox)
 
 ---
 
-### 🔹 Installation
+### 🔹 Run the Project
 
-#### 1. Clone the repository
+1. Clone the repository:
 
-```bash
-git clone https://github.com/your-username/personal-budgeting-system.git
-cd personal-budgeting-system
+```bash id="c4fy0h"
+git clone https://github.com/your-username/personal-budgeting-frontend.git
+cd personal-budgeting-frontend
 ```
 
-#### 2. Setup Backend
+2. Open the project:
 
-```bash
-cd backend
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
+* Open `index.html` in your browser
+  OR
+* Use Live Server (VS Code extension)
+
+---
+
+## 🔌 API Integration
+
+The frontend communicates with a backend API using:
+
+* `fetch()` or `XMLHttpRequest`
+* JSON data format
+
+Example:
+
+```javascript id="8a5q7k"
+fetch('/api/transactions')
+  .then(response => response.json())
+  .then(data => console.log(data));
 ```
 
-#### 3. Setup Frontend
+---
 
-```bash
-cd frontend
-npm install
-npm start
-```
+## 📊 UI & UX Highlights
+
+* Responsive design for different screen sizes
+* Clean and modern layout
+* Interactive elements and real-time updates
+* User-friendly navigation
 
 ---
 
-## 🔌 API Overview
+## 📧 Notes
 
-| Method | Endpoint       | Description      |
-| ------ | -------------- | ---------------- |
-| POST   | /auth/register | Register user    |
-| POST   | /auth/login    | Login user       |
-| GET    | /transactions  | Get transactions |
-| POST   | /transactions  | Add transaction  |
-| GET    | /budgets       | Get budgets      |
-| POST   | /goals         | Create goal      |
+* This project focuses only on the **frontend layer**
+* Backend services (authentication, database, APIs) are handled separately
 
 ---
 
-## 📧 Notifications
+## 👨‍💻 Author
 
-The system integrates with an email service to:
-
-* Send verification emails
-* Notify users about budget limits
-* Send monthly reports
-
----
-
-## 📊 Diagrams
-
-The project includes:
-
-* Context Diagram (C4 Level 1)
-* Container Diagram (C4 Level 2)
-* Component Diagram (C4 Level 3)
-
----
-
-## 👨‍💻 Authors
-
-* Your Name Here
+* Basem Mohamed
+* Abdelrahman Tarek
 
 ---
 
 ## 📄 License
 
 This project is for educational purposes (CS251 – Software Engineering).
-
----
