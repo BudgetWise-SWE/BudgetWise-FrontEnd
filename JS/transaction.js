@@ -1,16 +1,13 @@
-// total Balance of all Transactions
-let total  =0; 
+
+import { setToStore , getFromStorage ,formatMoney ,addTransactionsToTable} from "./storage.js";
 
 
 // for last transaction
 const itemsPerPage = 8;
-let currentPage = 1;
-const transactions = JSON.parse(localStorage.getItem('transactions')) || []
-const nextBtn = document.getElementById("next-btn")
-const prevBtn = document.getElementById("prev-btn")
+const total = document.getElementById("total_balance")
 
-nextBtn.addEventListener('click',goToNextPage)
-prevBtn.addEventListener('click',goToPrevPage)
+let currentPage = Number(getFromStorage('currentPage', 1));
+total.textContent = formatMoney(getFromStorage('totalBalance',0))
 
 
 
@@ -20,80 +17,24 @@ renderTransactions()
 
 
 // formating the money
-function formatMoney(amount) {
-    const sign = amount < 0 ? "-" : "";
-    return `${sign}$${Math.abs(amount)}`;
-}
+
 
 
 // update the total balance
 function updateTotalBalance(newTransaction){
+    let total  = JSON.parse(localStorage.getItem('totalBalance')); 
     const totalBalance = document.getElementById("total_balance")
 
     console.log(total)
     total += Number(newTransaction);
-    console.log(total)
+    
+    localStorage.setItem('totalBalance',JSON.stringify(total))
 
     totalBalance.textContent = `${formatMoney(total)}`
 }
 
 
-// add transaction to the table
-function addTransactionsToTable(transaction){
-    // const iconOfTransaction = document.getElementById("foodCategory")
-   
-    const colors  ={
-         "Dining & Drinks":"orange",
-         "Shopping" : "purple",
-        "Transportation":"blue",
-        "Heath" : "emerald",
-        "Utilities":"red",
-        "Entertainment":"gray"
-    }
 
-    // get the color of the type dynamically
-    const color = colors[transaction.category]
-
-
-
-    if(transaction.type =="Expense"){
-        transaction.amountOfMoney = -transaction.amountOfMoney
-    }    
-
-    // handle money format 
-    const formatedTransaction = formatMoney(transaction.amountOfMoney)
-
-    if(transaction){
-        
-        const tr = document.createElement("tr")
-        tr.className = "tx-row"
-
-        tr.innerHTML = `
-        <td class="tx-table__td">
-        <div class="tx-desc">
-            <div class="tx-icon tx-icon--${color}">
-            <span class="material-symbols-outlined">restaurant</span>
-            </div>
-            <div class="tx-desc__text">
-            <p class="tx-desc__name">${transaction.name}</p>
-            <p class="tx-desc__note">${transaction.notes}</p>
-            </div>
-        </div>
-        </td>
-
-        <td class="tx-table__td">
-        <span class="tx-badge tx-badge--${color}">${transaction.category}</span>
-        </td>
-
-        <td class="tx-table__td tx-table__td--date">${transaction.dataOfTransaction}</td>
-
-        <td class="tx-table__td tx-table__td--amount">${formatedTransaction}</td>
-    `;
-
-    // 3. Append to table body
-     document.querySelector("tbody").appendChild(tr)
-    }
-}
 
 
 
@@ -101,6 +42,14 @@ function addTransactionsToTable(transaction){
 
 // update the pagination bar
 function updatePagination() {
+    const transactions = JSON.parse(localStorage.getItem('transactions')) || []
+
+    const nextBtn = document.getElementById("next-btn")
+    const prevBtn = document.getElementById("prev-btn")
+
+    nextBtn.addEventListener('click',goToNextPage)
+    prevBtn.addEventListener('click',goToPrevPage)
+
 
     const totalPages = Math.ceil(transactions.length / itemsPerPage);
 
@@ -114,9 +63,13 @@ function updatePagination() {
 //render the table of transactions
 function renderTransactions() {
 
+    let currentPage = getFromStorage('currentPage',1);
+
     const tableBody = document.querySelector("tbody");
     tableBody.innerHTML = "";
 
+    const transactions = JSON.parse(localStorage.getItem('transactions')) || []
+    
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
 
@@ -132,10 +85,15 @@ function renderTransactions() {
 
 // go to the next page and render
 function goToNextPage() {
+    const transactions = JSON.parse(localStorage.getItem('transactions')) || []
     const totalPage = Math.ceil(transactions.length / itemsPerPage);
 
     if (currentPage < totalPage) {
+        
         currentPage++;
+
+        setToStore('currentPage',currentPage)
+
         renderTransactions();
     }
 }
@@ -143,7 +101,11 @@ function goToNextPage() {
 // go to the prev page and render 
 function goToPrevPage() {
     if (currentPage > 1) {
+
         currentPage--;
+
+        setToStore('currentPage',currentPage)
+
         renderTransactions();
     }
 }
@@ -192,7 +154,7 @@ function validateTransaction(name,amountOfMoney,dataOfTransaction){
 
 
 
-// get the transaction form
+// get the transaction
 const transactionForm = document.getElementById("transaction-form")
 
 transactionForm.addEventListener('submit',(e)=>{
