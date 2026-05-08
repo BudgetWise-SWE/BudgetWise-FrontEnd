@@ -36,11 +36,9 @@ const prevBtn       = document.getElementById("prev-btn");
 /** @type {HTMLButtonElement} */
 const nextBtn       = document.getElementById("next-btn");
 
-/** Number of transactions per page. @type {number} */
-const PAGE_SIZE = 5;
-/** All fetched transactions. @type {Array<Object>} */
+// ── State ─────────────────────────────────────────────────────
+const PAGE_SIZE = 8;
 let allTransactions = [];
-/** Current pagination page (1-indexed). @type {number} */
 let currentPage     = 1;
 
 /** Prefill the date input with today's date. */
@@ -101,7 +99,7 @@ async function loadBalance() {
 }
 
 /**
- * Fetch all transactions from the API and render the first page.
+ * Load all transactions from the API, sort by newest first, and render.
  * @returns {Promise<void>}
  */
 async function loadTransactions() {
@@ -115,30 +113,31 @@ async function loadTransactions() {
 }
 
 /**
- * Render a single page of the transaction table.
- * @param {number} page - The page number to render (1-indexed).
+ * Render a page of transactions sorted newest-first.
+ * @param {number} page - Page number (1-indexed).
  */
 function renderPage(page) {
-  currentPage          = page;
-  const totalPages     = Math.max(1, Math.ceil(allTransactions.length / PAGE_SIZE));
-  const start          = (page - 1) * PAGE_SIZE;
-  const slice          = allTransactions.slice(start, start + PAGE_SIZE);
+  currentPage = page;
+  const totalPages = Math.max(1, Math.ceil(allTransactions.length / PAGE_SIZE));
+  const start = (page - 1) * PAGE_SIZE;
+
+  const sorted = [...allTransactions].sort((a, b) => b.id - a.id);
+  const slice = sorted.slice(start, start + PAGE_SIZE);
 
   pageInfoEl.textContent = `Page ${page} of ${totalPages}`;
   prevBtn.disabled = page <= 1;
   nextBtn.disabled = page >= totalPages;
 
+  const emptyColspan = document.querySelectorAll(".tx-table thead th").length || 4;
+
   if (!slice.length) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="4" style="text-align:center;padding:2rem;color:var(--color-muted)">
-          No transactions yet. Add your first one!
-        </td>
-      </tr>`;
+    const emptyRows = `<tr><td colspan="${emptyColspan}" style="text-align:center;padding:2rem;color:var(--color-muted)">No transactions yet. Add your first one!</td></tr>`;
+    const fillRows = `<tr class="tx-row tx-row--empty" style="height:${64 * (PAGE_SIZE - 1)}px"><td colspan="${emptyColspan}"></td></tr>`;
+    tbody.innerHTML = emptyRows + fillRows;
     return;
   }
 
-  tbody.innerHTML = slice.map((tx) => {
+  let html = slice.map((tx) => {
     const isIncome  = (tx.type || "").toLowerCase() === "income";
     const catName   = tx.category_display_name || "Other";
     const { icon, color } = getCategoryMeta(catName);
@@ -169,6 +168,13 @@ function renderPage(page) {
         </td>
       </tr>`;
   }).join("");
+
+  const remaining = PAGE_SIZE - slice.length;
+  if (remaining > 0) {
+    html += `<tr class="tx-row tx-row--empty" style="height:${64 * remaining}px"><td colspan="${emptyColspan}"></td></tr>`;
+  }
+
+  tbody.innerHTML = html;
 }
 
 prevBtn.addEventListener("click", () => {
