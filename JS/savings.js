@@ -78,11 +78,24 @@ function getGoalMeta(name = "") {
   return GOAL_ICONS.default;
 }
 
+function getProgressColorClass(progress) {
+  if (progress >= 100) return "good";
+  if (progress >= 60)  return "warning";
+  return "danger";
+}
+
 function getStatusLabel(progress, completed) {
   if (completed || progress >= 100) return "Completed!";
   if (progress >= 75) return "Almost there!";
   if (progress >= 25) return "In Progress";
   return "Just started";
+}
+
+function getStatusClass(progress, completed) {
+  if (completed || progress >= 100) return "completed";
+  if (progress >= 75) return "almost";
+  if (progress >= 25) return "progress";
+  return "started";
 }
 
 function dashOffset(progress) {
@@ -111,6 +124,8 @@ function renderGoals() {
     const completed = goal.completed || progress >= 100;
     const { icon, cls } = getGoalMeta(goal.name);
     const status    = getStatusLabel(progress, completed);
+    const sClass    = getStatusClass(progress, completed);
+    const pColor    = getProgressColorClass(progress);
     const deadline  = goal.deadline ? fmtDate(goal.deadline) : "No deadline";
 
     return `
@@ -129,7 +144,7 @@ function renderGoals() {
           <div class="progress-ring">
             <svg viewBox="0 0 100 100" class="progress-svg">
               <circle cx="50" cy="50" r="45" class="progress-bg"/>
-              <circle cx="50" cy="50" r="45" class="progress-fill"
+              <circle cx="50" cy="50" r="45" class="progress-fill progress-fill--${pColor}"
                 style="stroke-dasharray:283;stroke-dashoffset:${dashOffset(progress)}"/>
             </svg>
             <span class="progress-percentage">${Math.round(progress)}%</span>
@@ -140,7 +155,7 @@ function renderGoals() {
               <span class="target">of ${fmt(target)}</span>
             </div>
             <div class="progress-bar-mini">
-              <div class="progress-fill-mini" style="width:${Math.min(100, progress).toFixed(1)}%"></div>
+              <div class="progress-fill-mini progress-fill-mini--${pColor}" style="width:${Math.min(100, progress).toFixed(1)}%"></div>
             </div>
           </div>
         </div>
@@ -150,8 +165,8 @@ function renderGoals() {
             <button class="btn-add-funds contribute-btn" data-id="${goal.id}" data-name="${goal.name}">
               <span class="material-symbols-outlined">add</span> Add Funds
             </button>` : ""}
-          <span class="goal-status ${completed ? "goal-status--completed" : ""}">${status}</span>
-          <button class="icon-btn delete-goal-btn" data-id="${goal.id}" data-name="${goal.name}" style="margin-left:auto" title="Delete goal">
+          <span class="goal-status goal-status--${sClass}">${status}</span>
+          <button class="delete-goal-btn" data-id="${goal.id}" data-name="${goal.name}" title="Delete goal">
             <span class="material-symbols-outlined">delete</span>
           </button>
         </div>
