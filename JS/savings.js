@@ -203,13 +203,17 @@ goalForm.addEventListener("submit", async (e) => {
   try {
     const goal = await apiFetch("/api/finance/savings-goals/", {
       method: "POST",
-      body: JSON.stringify({ name, target_amount: target_amount.toString(), deadline }),
+      body: JSON.stringify({
+        name,
+        target_amount: target_amount.toFixed(2),
+        deadline: deadline ? deadline + "-01" : null,
+      }),
     });
 
     if (initial > 0) {
       await apiFetch(`/api/finance/savings-goals/${goal.id}/contribute/`, {
         method: "POST",
-        body: JSON.stringify({ amount: initial.toString() }),
+        body: JSON.stringify({ amount: initial.toFixed(2) }),
       });
     }
 
@@ -218,7 +222,8 @@ goalForm.addEventListener("submit", async (e) => {
     goalForm.reset();
     loadGoals();
   } catch (err) {
-    toast(err?.name?.[0] || err?.target_amount?.[0] || "Failed to create goal.", "error");
+    const msg = err?.name?.[0] || err?.target_amount?.[0] || err?.deadline?.[0] || err?.detail || "Failed to create goal.";
+    toast(msg, "error");
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = "Create Goal";
@@ -266,12 +271,11 @@ function openContributeModal(goalId, goalName) {
       try {
         await apiFetch(`/api/finance/savings-goals/${contributeGoalId}/contribute/`, {
           method: "POST",
-          body: JSON.stringify({ amount: amount.toString() }),
+          body: JSON.stringify({ amount: amount.toFixed(2) }),
         });
         toast("Funds added!");
         closeModal(contributeModal);
-document.getElementById("logoutBtn")?.addEventListener("click", logout);
-loadGoals();
+        loadGoals();
       } catch (err) {
         toast(err?.detail || "Failed to add funds.", "error");
       } finally {
