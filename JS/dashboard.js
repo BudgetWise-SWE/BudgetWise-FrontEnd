@@ -25,10 +25,10 @@ async function loadDashboard() {
     const data = await apiFetch("/api/analytics/dashboard-summary/");
     if (!data) return;
 
-    totalIncomeEl.textContent  = fmt(data.total_income  || 0);
-    totalExpenseEl.textContent = fmt(data.total_expenses || 0);
-    remainingEl.textContent    = fmt(data.remaining      || 0);
-    numTransEl.textContent     = data.num_of_trans        || data.total_transactions || "0";
+    totalIncomeEl.textContent  = fmt(Math.abs(parseFloat(data.total_income  || 0)));
+    totalExpenseEl.textContent = fmt(Math.abs(parseFloat(data.total_expenses || 0)));
+    remainingEl.textContent    = fmt(parseFloat(data.remaining || 0));
+    numTransEl.textContent     = data.num_of_trans || data.total_transactions || "0";
 
     // Colour remaining balance red if negative
     if (parseFloat(data.remaining) < 0) {
@@ -59,10 +59,11 @@ function renderRecentTransactions(transactions) {
   tbody.innerHTML = transactions
     .slice(0, 5)
     .map((tx) => {
-      const isIncome   = tx.type === "income";
+      const isIncome   = (tx.type || "").toLowerCase() === "income";
       const catName    = tx.category_display_name || tx.name || "Other";
       const { icon, color } = getCategoryMeta(catName);
-      const amount     = fmt(tx.amount || tx.amountOfMoney || 0);
+      const rawAmount  = Math.abs(parseFloat(tx.amount || tx.amountOfMoney || 0));
+      const amount     = fmt(rawAmount);
       const sign       = isIncome ? "+" : "-";
       const amountCls  = isIncome ? "tx-amount--credit" : "tx-amount--debit";
 

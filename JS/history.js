@@ -54,7 +54,7 @@ function applyFilters() {
     const notes   = (tx.notes || tx.description || "").toLowerCase();
     const catName = tx.category_display_name || "";
     const txDate  = new Date(tx.date || tx.dataOfTransaction);
-    const isIncome = tx.type === "income";
+    const isIncome = (tx.type || "").toLowerCase() === "income";
 
     if (search   && !name.includes(search) && !notes.includes(search)) return false;
     if (category && catName !== category && !(category === "Income" && isIncome)) return false;
@@ -72,15 +72,15 @@ function applyFilters() {
 
 // ── Summary stats ─────────────────────────────────────────────
 function renderSummaryStats() {
-  const income   = filtered.filter((t) => t.type === "income")
-                           .reduce((s, t) => s + parseFloat(t.amount || 0), 0);
-  const expense  = filtered.filter((t) => t.type === "expense")
-                           .reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+  const income   = filtered.filter((t) => (t.type || "").toLowerCase() === "income")
+                           .reduce((s, t) => s + Math.abs(parseFloat(t.amount || t.amountOfMoney || 0)), 0);
+  const expense  = filtered.filter((t) => (t.type || "").toLowerCase() === "expense")
+                           .reduce((s, t) => s + Math.abs(parseFloat(t.amount || t.amountOfMoney || 0)), 0);
   const net      = income - expense;
 
   totalTransEl.textContent    = filtered.length.toLocaleString();
   totalIncomeEl.textContent   = fmt(income);
-  totalExpensesEl.textContent = `-${fmt(expense)}`;
+  totalExpensesEl.textContent = fmt(expense);
   netBalanceEl.textContent    = fmt(net);
 
   if (net < 0) netBalanceEl.style.color = "var(--color-danger, #ef4444)";
@@ -110,10 +110,11 @@ function renderPage(page) {
       </tr>`;
   } else {
     tbody.innerHTML = slice.map((tx) => {
-      const isIncome   = tx.type === "income";
+      const isIncome   = (tx.type || "").toLowerCase() === "income";
       const catName    = tx.category_display_name || (isIncome ? "Income" : "Other");
       const { icon, color } = getCategoryMeta(catName);
-      const amount     = fmt(tx.amount || 0);
+      const rawAmount  = Math.abs(parseFloat(tx.amount || tx.amountOfMoney || 0));
+      const amount     = fmt(rawAmount);
       const sign       = isIncome ? "+" : "-";
       const amountCls  = isIncome ? "tx-amount--credit" : "tx-amount--debit";
       const dateStr    = fmtDate(tx.date || tx.dataOfTransaction);

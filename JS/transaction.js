@@ -70,10 +70,11 @@ function renderPage(page) {
   }
 
   tbody.innerHTML = slice.map((tx) => {
-    const isIncome  = tx.type === "income";
+    const isIncome  = (tx.type || "").toLowerCase() === "income";
     const catName   = tx.category_display_name || "Other";
     const { icon, color } = getCategoryMeta(catName);
-    const amount    = fmt(tx.amount || tx.amountOfMoney || 0);
+    const rawAmount = Math.abs(parseFloat(tx.amount || tx.amountOfMoney || 0));
+    const amount    = fmt(rawAmount);
     const sign      = isIncome ? "+" : "-";
     const amountCls = isIncome ? "tx-amount--credit" : "tx-amount--debit";
 
