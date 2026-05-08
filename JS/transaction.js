@@ -29,6 +29,19 @@ let currentPage     = 1;
 // ── Prefill today's date ──────────────────────────────────────
 dateInput.value = new Date().toISOString().split("T")[0];
 
+// ── Category options by type ──────────────────────────────────
+const EXPENSE_CATS = ["Dining & Drinks", "Shopping", "Transportation", "Entertainment", "Utilities", "Health"];
+const INCOME_CATS  = ["Salary", "Freelance", "Investments", "Business", "Other Income"];
+
+function updateCategoryOptions(type) {
+  const cats = type === "income" ? INCOME_CATS : EXPENSE_CATS;
+  categorySelect.innerHTML = cats.map((c) => `<option>${c}</option>`).join("");
+}
+
+typeSelect.addEventListener("change", () => {
+  updateCategoryOptions(typeSelect.value.toLowerCase());
+});
+
 // ── Load total balance from dashboard summary ─────────────────
 async function loadBalance() {
   try {
