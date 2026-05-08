@@ -1,0 +1,25 @@
+{
+  "name": "budgetwise-frontend",
+  "version": "1.0.0",
+  "description": "This project is the **frontend implementation** of a Personal Budgeting Web Application. It provides users with an interactive interface to manage their finances, including tracking income, expenses, budgets, and savings goals.",
+  "main": "index.js",
+  "scripts": {
+    "docs": "npx jsdoc -c jsdoc.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BudgetWise-SWE/BudgetWise-FrontEnd.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/BudgetWise-SWE/BudgetWise-FrontEnd/issues"
+  },
+  "homepage": "https://github.com/BudgetWise-SWE/BudgetWise-FrontEnd#readme",
+  "devDependencies": {
+    "jsdoc": "^4.0.5"
+  }
+}
