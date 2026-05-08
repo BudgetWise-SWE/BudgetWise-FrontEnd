@@ -2,12 +2,6 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/", "destination": "/HTML/index.html" },
-    { "source": "/login", "destination": "/HTML/login.html" },
-    { "source": "/signup", "destination": "/HTML/signup.html" },
-    { "source": "/dashboard", "destination": "/HTML/dashboard.html" },
-    { "source": "/budgets", "destination": "/HTML/budgets.html" },
-    { "source": "/history", "destination": "/HTML/history.html" },
-    { "source": "/savings", "destination": "/HTML/savings.html" },
-    { "source": "/transaction", "destination": "/HTML/transaction.html" }
+    { "source": "/(.*)", "destination": "/$1" }
   ]
 }
