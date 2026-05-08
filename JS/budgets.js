@@ -1,4 +1,4 @@
-import { requireAuth, apiFetch, fmt, toast } from "./api.js";
+import { requireAuth, apiFetch, fmt, toast, logout } from "./api.js";
 
 requireAuth();
 
@@ -626,5 +626,6 @@ document.querySelectorAll(".modal").forEach((modal) => {
   });
 });
 
+document.getElementById("logoutBtn")?.addEventListener("click", logout);
 updateMonthDisplay();
 loadAll();

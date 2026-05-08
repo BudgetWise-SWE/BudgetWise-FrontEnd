@@ -1,4 +1,4 @@
-import { requireAuth, apiFetch, fmt, fmtDate, toast } from "./api.js";
+import { requireAuth, apiFetch, fmt, fmtDate, toast, logout } from "./api.js";
 
 requireAuth();
 
@@ -270,7 +270,8 @@ function openContributeModal(goalId, goalName) {
         });
         toast("Funds added!");
         closeModal(contributeModal);
-        loadGoals();
+document.getElementById("logoutBtn")?.addEventListener("click", logout);
+loadGoals();
       } catch (err) {
         toast(err?.detail || "Failed to add funds.", "error");
       } finally {

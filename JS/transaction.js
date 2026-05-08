@@ -2,7 +2,7 @@
 //  BudgetWise — Transactions Page
 // ============================================================
 import {
-  requireAuth, apiFetch, fmt, fmtDate, getCategoryMeta, toast,
+  requireAuth, apiFetch, fmt, fmtDate, getCategoryMeta, toast, logout,
 } from "./api.js";
 
 requireAuth();
@@ -174,5 +174,6 @@ form.addEventListener("submit", async (e) => {
 });
 
 // ── Init ──────────────────────────────────────────────────────
+document.getElementById("logoutBtn")?.addEventListener("click", logout);
 loadBalance();
 loadTransactions();

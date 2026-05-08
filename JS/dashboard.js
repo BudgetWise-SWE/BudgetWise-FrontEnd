@@ -1,7 +1,7 @@
 // ============================================================
 //  BudgetWise — Dashboard
 // ============================================================
-import { requireAuth, apiFetch, fmt, fmtDate, getUser, getCategoryMeta } from "./api.js";
+import { requireAuth, apiFetch, fmt, fmtDate, getUser, getCategoryMeta, logout } from "./api.js";
 
 requireAuth();
 
@@ -90,4 +90,5 @@ function renderRecentTransactions(transactions) {
     .join("");
 }
 
+document.getElementById("logoutBtn")?.addEventListener("click", logout);
 loadDashboard();

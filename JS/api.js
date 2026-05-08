@@ -25,6 +25,12 @@ export function requireAuth() {
   return true;
 }
 
+// ── Logout: clear session and redirect ───────────────────────
+export function logout() {
+  clearAuth();
+  window.location.href = "login.html";
+}
+
 // ── Core fetch wrapper (adds Auth header automatically) ──────
 export async function apiFetch(path, options = {}) {
   const token = getToken();

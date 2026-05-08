@@ -1,7 +1,7 @@
 // ============================================================
 //  BudgetWise — Transaction History Page
 // ============================================================
-import { requireAuth, apiFetch, fmt, fmtDate, getCategoryMeta, toast } from "./api.js";
+import { requireAuth, apiFetch, fmt, fmtDate, getCategoryMeta, toast, logout } from "./api.js";
 
 requireAuth();
 
@@ -213,4 +213,5 @@ exportBtn?.addEventListener("click", () => {
 });
 
 // ── Init ──────────────────────────────────────────────────────
+document.getElementById("logoutBtn")?.addEventListener("click", logout);
 loadTransactions();
