@@ -10,8 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
   <!-- Styles -->
+  <link rel="stylesheet" href="../CSS/shared.css" />
   <link rel="stylesheet" href="../CSS/transaction.css" />
-  <link rel="stylesheet" href="../CSS/global.css" />
 </head>
 <body>
   <script type="module" src="../JS/transaction.js"></script>
@@ -111,15 +111,10 @@
             <div class="form-field">
               <label class="form-label" for="type">Type</label>
               <div class="name-wrap">
-                <select
-                  id="type"
-                  type="text"
-                  class="form-input"
-                  placeholder="Expense"
-                >
-                <option>Expense</option>
-                <option>Income</option>
-              </select>
+                <select id="type" class="form-input">
+                  <option value="expense">Expense</option>
+                  <option value="income">Income</option>
+                </select>
               </div>
             </div>
 
@@ -332,5 +327,7 @@
   <button class="fab" aria-label="Add transaction">
     <span class="material-symbols-outlined fab__icon">add</span>
   </button>
+
+  <div class="toast-container" id="toastContainer"></div>
 </body>
 </html>

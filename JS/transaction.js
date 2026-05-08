@@ -36,21 +36,24 @@ async function loadCategories() {
   try {
     const data = await apiFetch("/api/finance/categories/");
     allCategories = Array.isArray(data) ? data : [];
-  } catch (_) {}
+  } catch (err) {
+    console.error("Failed to load categories:", err);
+    toast("Failed to load categories.", "error");
+  }
   updateCategoryOptions(getSelectedType());
 }
 
 function getSelectedType() {
-  return (typeSelect.value || "expense").toLowerCase();
+  return typeSelect.value || "expense";
 }
 
 function updateCategoryOptions(type) {
   const cats = allCategories.filter((c) => (c.type || "").toLowerCase() === type);
   if (!cats.length) {
-    categorySelect.innerHTML = `<option value="">-- No categories --</option>`;
+    categorySelect.innerHTML = `<option value="">-- No categories available --</option>`;
     return;
   }
-  categorySelect.innerHTML = cats.map((c) => `<option>${c.name}</option>`).join("");
+  categorySelect.innerHTML = cats.map((c) => `<option value="${c.name}">${c.name}</option>`).join("");
 }
 
 typeSelect.addEventListener("change", () => {
@@ -143,7 +146,7 @@ nextBtn.addEventListener("click", () => {
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const type        = typeSelect.value.toLowerCase();
+  const type        = typeSelect.value;
   const name        = nameInput.value.trim();
   const amount      = parseFloat(amountInput.value);
   const category_name = categorySelect.value;
