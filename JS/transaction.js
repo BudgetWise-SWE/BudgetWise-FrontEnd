@@ -158,7 +158,6 @@ form.addEventListener("submit", async (e) => {
   const date        = dateInput.value;
   const notes       = notesInput.value.trim();
 
-  // Basic validation
   if (!name) {
     toast("Please enter a transaction name.", "error");
     nameInput.focus();
@@ -196,7 +195,6 @@ form.addEventListener("submit", async (e) => {
     form.reset();
     dateInput.value = new Date().toISOString().split("T")[0];
 
-    // Prepend to local list and refresh
     allTransactions.unshift(newTx);
     renderPage(1);
     loadBalance();

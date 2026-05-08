@@ -104,7 +104,7 @@ function renderPage(page) {
   if (!slice.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="4" style="text-align:center;padding:2.5rem;color:var(--color-muted)">
+        <td colspan="5" style="text-align:center;padding:2.5rem;color:var(--color-muted)">
           No transactions match your filters.
         </td>
       </tr>`;
@@ -120,7 +120,7 @@ function renderPage(page) {
       const dateStr    = fmtDate(tx.date || tx.dataOfTransaction);
 
       return `
-        <tr class="tx-row">
+        <tr class="tx-row" data-id="${tx.id}">
           <td class="tx-table__td">
             <div class="tx-desc">
               <div class="tx-icon tx-icon--${color}">
@@ -137,6 +137,14 @@ function renderPage(page) {
           <td class="tx-table__td tx-table__td--right">
             <span class="tx-amount ${amountCls}">${sign}${amount}</span>
           </td>
+          <td class="tx-table__td tx-table__td--right">
+            <button class="icon-btn-sm edit-tx-btn" data-id="${tx.id}" title="Edit">
+              <span class="material-symbols-outlined">edit</span>
+            </button>
+            <button class="icon-btn-sm icon-btn-sm--danger delete-tx-btn" data-id="${tx.id}" title="Delete">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </td>
         </tr>`;
     }).join("");
   }
@@ -144,6 +152,55 @@ function renderPage(page) {
   // Pagination buttons
   renderPagination(page, totalPages);
 }
+
+// ── Edit / Delete ────────────────────────────────────────────
+tbody.addEventListener("click", async (e) => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const row = btn.closest("tr");
+  if (!row) return;
+  const id = row.dataset.id;
+  if (!id) return;
+
+  // DELETE
+  if (btn.classList.contains("delete-tx-btn")) {
+    if (!confirm("Delete this transaction? This cannot be undone.")) return;
+    try {
+      await apiFetch(`/api/finance/transactions/${id}/`, { method: "DELETE" });
+      allTransactions = allTransactions.filter((t) => t.id !== parseInt(id));
+      toast("Transaction deleted.");
+      applyFilters();
+    } catch (err) {
+      toast(err?.detail || "Failed to delete.", "error");
+    }
+    return;
+  }
+
+  // EDIT
+  if (btn.classList.contains("edit-tx-btn")) {
+    const tx = allTransactions.find((t) => t.id === parseInt(id));
+    if (!tx) return;
+    const newName = prompt("Transaction name:", tx.name || "");
+    if (!newName) return;
+    const newAmount = prompt("Amount:", Math.abs(parseFloat(tx.amount || tx.amountOfMoney || 0)));
+    if (!newAmount || isNaN(parseFloat(newAmount))) return;
+    try {
+      const updated = await apiFetch(`/api/finance/transactions/${id}/`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          name: newName.trim(),
+          amount: parseFloat(newAmount).toString(),
+        }),
+      });
+      const idx = allTransactions.findIndex((t) => t.id === parseInt(id));
+      if (idx !== -1) allTransactions[idx] = updated;
+      toast("Transaction updated.");
+      applyFilters();
+    } catch (err) {
+      toast(err?.detail || "Failed to update.", "error");
+    }
+  }
+});
 
 function renderPagination(page, totalPages) {
   if (!paginationControls) return;

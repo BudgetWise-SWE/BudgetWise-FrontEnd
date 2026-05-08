@@ -404,6 +404,31 @@
   color: var(--color-on-surface);
 }
 
+/* Action icon buttons */
+.icon-btn-sm {
+  padding:        6px;
+  border-radius:  var(--radius-sm);
+  color:          var(--color-muted);
+  cursor:         pointer;
+  background:     none;
+  border:         none;
+  transition:     all .15s ease;
+  display:        inline-flex;
+  align-items:    center;
+  justify-content: center;
+}
+.icon-btn-sm:hover {
+  background: var(--color-bg);
+  color:      var(--color-primary);
+}
+.icon-btn-sm--danger:hover {
+  background: #fef2f2;
+  color:      #dc2626;
+}
+.icon-btn-sm .material-symbols-outlined {
+  font-size: 18px;
+}
+
 /* For mobile */
 @media (max-width: 768px) {
   .toast-container {
