@@ -45,9 +45,9 @@ function getSelectedType() {
 }
 
 function updateCategoryOptions(type) {
-  const cats = allCategories.filter((c) => c.is_predefined !== true && (c.type || "").toLowerCase() === type);
+  const cats = allCategories.filter((c) => (c.type || "").toLowerCase() === type);
   if (!cats.length) {
-    categorySelect.innerHTML = `<option value="">-- No custom categories --</option>`;
+    categorySelect.innerHTML = `<option value="">-- No categories --</option>`;
     return;
   }
   categorySelect.innerHTML = cats.map((c) => `<option>${c.name}</option>`).join("");

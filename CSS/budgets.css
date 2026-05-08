@@ -475,46 +475,26 @@
   vertical-align: middle;
 }
 
-/* Category Toggle Buttons */
-.category-toggle {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-4);
-  margin-bottom: var(--space-8);
-}
-
-.toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-6);
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-sm);
+/* Category Type Badges */
+.type-badge {
+  font-size: 10px;
   font-weight: 600;
-  background: var(--color-white);
-  border: 1px solid var(--color-border);
-  color: var(--color-muted);
-  cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  vertical-align: middle;
+  margin-left: var(--space-2);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
-.toggle-btn:hover {
-  background: var(--color-bg);
-  border-color: var(--color-primary);
+.type-badge--income {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
 }
 
-.toggle-btn--active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: white;
-}
-
-.toggle-btn--active .material-symbols-outlined {
-  color: white;
-}
-
-.toggle-btn .material-symbols-outlined {
-  font-size: 18px;
+.type-badge--expense {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
 }
 
 /* Custom Category Card Actions */

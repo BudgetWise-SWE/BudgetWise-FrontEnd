@@ -6,7 +6,7 @@ let budgets         = [];
 let categoryLimits  = [];
 let categories      = [];
 let customCategories = [];
-let currentView     = "predefined";
+
 let displayDate     = new Date();
 let pendingDeleteId = null;
 let pendingDeleteType = null;
@@ -21,8 +21,6 @@ const currentMonthEl    = document.getElementById("currentMonth");
 const prevMonthBtn      = document.getElementById("prevMonthBtn");
 const nextMonthBtn      = document.getElementById("nextMonthBtn");
 const createBudgetBtn   = document.getElementById("createBudgetBtn");
-const showPredefinedBtn = document.getElementById("showPredefinedBtn");
-const showCustomBtn     = document.getElementById("showCustomBtn");
 const loadingEl         = document.getElementById("budgetsLoading");
 const errorEl           = document.getElementById("budgetsError");
 const retryBtn          = document.getElementById("retryBtn");
@@ -149,8 +147,6 @@ function renderSummaryCards() {
     : "inherit";
 }
 
-const PREDEFINED_CATS = ["Dining & Drinks","Shopping","Transportation","Entertainment","Utilities","Health"];
-
 function getCategoryId(catName) {
   const found = categories.find(
     (c) => c.name.toLowerCase() === catName.toLowerCase()
@@ -165,59 +161,49 @@ function renderBudgets() {
 
   const monthLimits = categoryLimits.filter((l) => l.budget === monthBudget?.id);
 
-  if (currentView === "predefined") {
-    renderPredefinedView(monthBudget, monthLimits);
-  } else {
-    renderCustomView(monthBudget, monthLimits);
-  }
-}
-
-function renderPredefinedView(monthBudget, monthLimits) {
-  if (!PREDEFINED_CATS.length) {
-    budgetsContainer.innerHTML = `<p class="empty-msg">No predefined categories.</p>`;
-    return;
-  }
-
-  budgetsContainer.innerHTML = PREDEFINED_CATS.map((catName) => {
-    const limit = monthLimits.find((l) => l.category === catName);
-    return buildBudgetCard(catName, limit, monthBudget, false);
-  }).join("");
-
-  attachCardListeners();
-}
-
-function renderCustomView(monthBudget, monthLimits) {
   const addCatBtn = `
     <button class="btn btn--secondary add-custom-cat-btn" style="margin-bottom:1.5rem;">
       <span class="material-symbols-outlined">add</span> Add Custom Category
     </button>`;
 
-  if (!customCategories.length) {
+  if (!categories.length) {
     budgetsContainer.innerHTML = addCatBtn + `
       <p class="empty-msg" style="color:var(--color-muted);text-align:center;padding:2rem">
-        No custom categories yet. Create one to get started.
+        No categories found. Create one to get started.
       </p>`;
     document.querySelector(".add-custom-cat-btn")?.addEventListener("click", openAddCustomCatModal);
     return;
   }
 
+  const sorted = [...categories].sort((a, b) => {
+    const aHas = monthLimits.some((l) => l.category === a.name);
+    const bHas = monthLimits.some((l) => l.category === b.name);
+    if (aHas && !bHas) return -1;
+    if (!aHas && bHas) return 1;
+    return 0;
+  });
+
   budgetsContainer.innerHTML = addCatBtn +
-    customCategories.map((cat) => {
+    sorted.map((cat) => {
       const limit = monthLimits.find((l) => l.category === cat.name);
-      return buildBudgetCard(cat.name, limit, monthBudget, true, cat.id);
+      return buildBudgetCard(cat, limit, monthBudget);
     }).join("");
 
   document.querySelector(".add-custom-cat-btn")?.addEventListener("click", openAddCustomCatModal);
   attachCardListeners();
 }
 
-function buildBudgetCard(catName, limit, monthBudget, isCustom, catId = null) {
-  const hasLimit   = !!limit;
-  const spent      = parseFloat(limit?.spent  || 0);
-  const budgetAmt  = parseFloat(limit?.limit  || 0);
-  const remaining  = parseFloat(limit?.remaining ?? (budgetAmt - spent));
-  const progress   = budgetAmt > 0 ? Math.min(100, (spent / budgetAmt) * 100) : 0;
-  const status     = limit?.status || "active";
+function buildBudgetCard(cat, limit, monthBudget) {
+  const catName   = cat.name;
+  const isCustom  = !cat.is_predefined;
+  const catId     = cat.id;
+  const catType   = cat.type || "expense";
+  const hasLimit  = !!limit;
+  const spent     = parseFloat(limit?.spent  || 0);
+  const budgetAmt = parseFloat(limit?.limit  || 0);
+  const remaining = parseFloat(limit?.remaining ?? (budgetAmt - spent));
+  const progress  = budgetAmt > 0 ? Math.min(100, (spent / budgetAmt) * 100) : 0;
+  const status    = limit?.status || "active";
 
   const barColor =
     progress >= 90 ? "var(--color-danger, #ef4444)" :
@@ -233,6 +219,10 @@ function buildBudgetCard(catName, limit, monthBudget, isCustom, catId = null) {
       ? `<span class="budget-status budget-status--ok">On track</span>`
       : "";
 
+  const typeBadge = catType === "income"
+    ? `<span class="type-badge type-badge--income">Income</span>`
+    : `<span class="type-badge type-badge--expense">Expense</span>`;
+
   const editDeleteBtns = isCustom ? `
     <button class="icon-btn edit-cat-btn" data-cat-id="${catId}" data-cat-name="${catName}" title="Edit category">
       <span class="material-symbols-outlined">edit</span>
@@ -245,13 +235,13 @@ function buildBudgetCard(catName, limit, monthBudget, isCustom, catId = null) {
     return `
       <div class="budget-card budget-card--empty">
         <div class="budget-card__header">
-          <h4 class="budget-card__name">${catName}</h4>
+          <h4 class="budget-card__name">${catName} ${typeBadge}</h4>
           <div class="budget-card__actions">${editDeleteBtns}</div>
         </div>
         <p class="budget-card__no-budget">No budget set for ${getMonthLabel()}</p>
         <button class="btn btn--secondary set-budget-btn"
           data-cat-name="${catName}"
-          data-cat-id="${catId || ""}"
+          data-cat-id="${catId}"
           data-limit-id=""
           data-budget-id="${monthBudget?.id || ""}">
           <span class="material-symbols-outlined">add</span> Set Budget
@@ -262,13 +252,13 @@ function buildBudgetCard(catName, limit, monthBudget, isCustom, catId = null) {
   return `
     <div class="budget-card" data-limit-id="${limit.id}">
       <div class="budget-card__header">
-        <h4 class="budget-card__name">${catName}</h4>
+        <h4 class="budget-card__name">${catName} ${typeBadge}</h4>
         <div class="budget-card__actions">
           ${statusBadge}
           ${editDeleteBtns}
           <button class="icon-btn set-budget-btn"
             data-cat-name="${catName}"
-            data-cat-id="${catId || ""}"
+            data-cat-id="${catId}"
             data-limit-id="${limit.id}"
             data-limit="${budgetAmt}"
             data-budget-id="${limit.budget}"
@@ -334,11 +324,7 @@ function attachCardListeners() {
 }
 
 function populateCategoryDropdown() {
-  const cats = currentView === "predefined"
-    ? PREDEFINED_CATS.map((n) => ({ name: n }))
-    : customCategories;
-
-  categorySelect.innerHTML = cats
+  categorySelect.innerHTML = categories
     .map((c) => `<option value="${c.name}">${c.name}</option>`)
     .join("");
 }
@@ -360,21 +346,6 @@ nextMonthBtn.addEventListener("click", () => {
   displayDate.setMonth(displayDate.getMonth() + 1);
   updateMonthDisplay();
   renderSummaryCards();
-  renderBudgets();
-});
-
-showPredefinedBtn.addEventListener("click", () => {
-  currentView = "predefined";
-  showPredefinedBtn.classList.add("toggle-btn--active");
-  showCustomBtn.classList.remove("toggle-btn--active");
-  populateCategoryDropdown();
-  renderBudgets();
-});
-showCustomBtn.addEventListener("click", () => {
-  currentView = "custom";
-  showCustomBtn.classList.add("toggle-btn--active");
-  showPredefinedBtn.classList.remove("toggle-btn--active");
-  populateCategoryDropdown();
   renderBudgets();
 });
 
