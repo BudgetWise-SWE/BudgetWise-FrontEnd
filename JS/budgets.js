@@ -1,848 +1,561 @@
-// budgets.js - Budget page with NO persistence (resets on every refresh)
+// ============================================================
+//  BudgetWise — Budgets Page
+// ============================================================
+import { requireAuth, apiFetch, fmt, toast } from "./api.js";
 
-// ================================================
-// DOM ELEMENTS
-// ================================================
-const createBudgetBtn = document.getElementById("createBudgetBtn");
-const modal = document.getElementById("createBudgetModal");
-const modalClose = document.querySelector(".modal-close");
-const cancelBtn = document.querySelector(".cancel-btn");
-const budgetForm = document.getElementById("budgetForm");
-const toastContainer = document.getElementById("toastContainer");
-const budgetsContainer = document.getElementById("budgetsContainer");
+requireAuth();
+
+// ── State ─────────────────────────────────────────────────────
+let budgets         = [];        // /api/finance/budgets/
+let categoryLimits  = [];        // /api/finance/budget-category-limits/
+let categories      = [];        // /api/finance/categories/
+let customCategories = [];       // user-created categories
+let currentView     = "predefined";  // "predefined" | "custom"
+let displayDate     = new Date();
+let pendingDeleteId = null;
+let pendingDeleteType = null;    // "budget" | "category"
+let editingCategoryId = null;
+
+// ── DOM refs ─────────────────────────────────────────────────
+const totalBudgetEl     = document.getElementById("totalBudget");
+const totalSpentEl      = document.getElementById("totalSpent");
+const totalRemainingEl  = document.getElementById("totalRemaining");
+const budgetsContainer  = document.getElementById("budgetsContainer");
+const currentMonthEl    = document.getElementById("currentMonth");
+const prevMonthBtn      = document.getElementById("prevMonthBtn");
+const nextMonthBtn      = document.getElementById("nextMonthBtn");
+const createBudgetBtn   = document.getElementById("createBudgetBtn");
 const showPredefinedBtn = document.getElementById("showPredefinedBtn");
-const showCustomBtn = document.getElementById("showCustomBtn");
-const currentMonthEl = document.getElementById("currentMonth");
-const prevMonthBtn = document.getElementById("prevMonthBtn");
-const nextMonthBtn = document.getElementById("nextMonthBtn");
+const showCustomBtn     = document.getElementById("showCustomBtn");
 
-// Set Budget Modal
-const setBudgetModal = document.getElementById("setBudgetModal");
-const setBudgetForm = document.getElementById("setBudgetForm");
-const setBudgetTitle = document.getElementById("setBudgetTitle");
-const setBudgetCategory = document.getElementById("setBudgetCategory");
+// Modals
+const createBudgetModal = document.getElementById("createBudgetModal");
+const budgetForm        = document.getElementById("budgetForm");
+const categorySelect    = document.getElementById("categorySelect");
+const budgetLimitInput  = document.getElementById("budgetLimit");
+const budgetMonthInput  = document.getElementById("budgetMonth");
+
+const addCustomCatModal = document.getElementById("addCustomCategoryModal");
+const customCatForm     = document.getElementById("customCategoryForm");
+const customCatNameInput= document.getElementById("customCategoryName");
+
+const setBudgetModal    = document.getElementById("setBudgetModal");
+const setBudgetForm     = document.getElementById("setBudgetForm");
+const setBudgetTitle    = document.getElementById("setBudgetTitle");
+const setBudgetCatInput = document.getElementById("setBudgetCategory");
 const setBudgetLimitInput = document.getElementById("setBudgetLimit");
-const setBudgetClose = document.querySelector(".set-budget-close");
-const setBudgetCancel = document.querySelector(".set-budget-cancel");
 
-// Delete Confirmation Modal (Budget)
-const deleteConfirmModal = document.getElementById("deleteConfirmModal");
-const deleteTitle = document.getElementById("deleteTitle");
-const deleteMessage = document.getElementById("deleteMessage");
-const deleteConfirmBtn = document.getElementById("deleteConfirmBtn");
+const editCatModal      = document.getElementById("editCategoryModal");
+const editCatForm       = document.getElementById("editCategoryForm");
+const editCatNameInput  = document.getElementById("editCategoryNameInput");
 
-// Edit Custom Category Modal
-const editCategoryModal = document.getElementById("editCategoryModal");
-const editCategoryForm = document.getElementById("editCategoryForm");
-const editCategoryNameInput = document.getElementById("editCategoryNameInput");
-const editCategoryIcon = document.getElementById("editCategoryIcon");
-const editCategoryClose = document.querySelector(".edit-category-close");
-const editCategoryCancel = document.querySelector(".edit-category-cancel");
+const deleteModal       = document.getElementById("deleteConfirmModal");
+const deleteMsg         = document.getElementById("deleteMessage");
+const deleteConfirmBtn  = document.getElementById("deleteConfirmBtn");
 
-// Delete Custom Category Modal
-const deleteCategoryConfirmModal = document.getElementById(
-  "deleteCategoryConfirmModal",
-);
-const deleteCategoryTitle = document.getElementById("deleteCategoryTitle");
-const deleteCategoryMessage = document.getElementById("deleteCategoryMessage");
-const deleteCategoryConfirmBtn = document.getElementById(
-  "deleteCategoryConfirmBtn",
-);
+const deleteCatModal    = document.getElementById("deleteCategoryConfirmModal");
+const deleteCatConfirmBtn = document.getElementById("deleteCategoryConfirmBtn");
 
-// Custom Category Modal
-const customCategoryModal = document.getElementById("addCustomCategoryModal");
-const customCategoryForm = document.getElementById("customCategoryForm");
-const customModalClose = document.querySelector(".modal-close-custom");
-const cancelCustomBtn = document.querySelector(".cancel-custom-btn");
+// ── Month helpers ─────────────────────────────────────────────
+const MONTHS = ["January","February","March","April","May","June",
+                "July","August","September","October","November","December"];
 
-// ================================================
-// STATE (All in-memory, NO localStorage)
-// ================================================
-let currentView = "predefined";
-let currentDate = new Date();
-let currentBudgets = [];
-let customCategories = [];
+function getMonthLabel() {
+  return `${MONTHS[displayDate.getMonth()]} ${displayDate.getFullYear()}`;
+}
+function getMonthNum()  { return displayDate.getMonth() + 1; }
+function getYearNum()   { return displayDate.getFullYear(); }
 
-// Pending actions storage
-let pendingCategoryName = null;
-let pendingCategoryId = null;
-
-// Predefined Categories
-const PREDEFINED_CATEGORIES = [
-  { name: "Dining & Drinks", icon: "restaurant", iconType: "orange" },
-  { name: "Shopping", icon: "shopping_bag", iconType: "purple" },
-  { name: "Transportation", icon: "directions_car", iconType: "blue" },
-  { name: "Entertainment", icon: "movie", iconType: "emerald" },
-  { name: "Utilities", icon: "bolt", iconType: "red" },
-  { name: "Health", icon: "fitness_center", iconType: "green" },
-  { name: "Education", icon: "school", iconType: "blue" },
-];
-
-// ================================================
-// INITIALIZE DEFAULT DATA (Resets on every refresh)
-// ================================================
-function initializeDefaultData() {
-  customCategories = [
-    { id: 1, name: "Pet Care", icon: "pets", iconType: "default" },
-    {
-      id: 2,
-      name: "Gym Membership",
-      icon: "fitness_center",
-      iconType: "default",
-    },
-  ];
-
-  const monthKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}`;
-  currentBudgets = [
-    {
-      id: 1,
-      category: "Dining & Drinks",
-      limit: 500,
-      spent: 375,
-      month: monthKey,
-    },
-    { id: 2, category: "Shopping", limit: 500, spent: 460, month: monthKey },
-    {
-      id: 3,
-      category: "Transportation",
-      limit: 300,
-      spent: 120,
-      month: monthKey,
-    },
-    { id: 4, category: "Utilities", limit: 350, spent: 192, month: monthKey },
-    {
-      id: 5,
-      category: "Entertainment",
-      limit: 200,
-      spent: 140,
-      month: monthKey,
-    },
-  ];
+function updateMonthDisplay() {
+  currentMonthEl.textContent = getMonthLabel();
 }
 
-// ================================================
-// TOAST NOTIFICATION SYSTEM
-// ================================================
-function showToast(title, message, type = "info", duration = 4000) {
-  if (!toastContainer) return;
+// ── Load all data ─────────────────────────────────────────────
+async function loadAll() {
+  try {
+    const [budgetData, limitData, catData] = await Promise.all([
+      apiFetch("/api/finance/budgets/"),
+      apiFetch("/api/finance/budget-category-limits/"),
+      apiFetch("/api/finance/categories/"),
+    ]);
 
-  const toast = document.createElement("div");
-  toast.className = `toast toast--${type}`;
+    budgets        = Array.isArray(budgetData) ? budgetData : [];
+    categoryLimits = Array.isArray(limitData)  ? limitData  : [];
+    categories     = Array.isArray(catData)    ? catData    : [];
 
-  let iconName = "info";
-  switch (type) {
-    case "success":
-      iconName = "check_circle";
-      break;
-    case "error":
-      iconName = "error";
-      break;
-    case "warning":
-      iconName = "warning";
-      break;
-    default:
-      iconName = "info";
+    customCategories = categories.filter((c) => !c.is_predefined);
+
+    renderSummaryCards();
+    renderBudgets();
+    populateCategoryDropdown();
+  } catch (err) {
+    console.error("Failed to load budgets:", err);
+    toast("Failed to load budget data.", "error");
   }
-
-  toast.innerHTML = `
-    <div class="toast-icon"><span class="material-symbols-outlined">${iconName}</span></div>
-    <div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div>
-    <button class="toast-close"><span class="material-symbols-outlined">close</span></button>
-  `;
-
-  toastContainer.appendChild(toast);
-  const closeBtn = toast.querySelector(".toast-close");
-  closeBtn.addEventListener("click", () => removeToast(toast));
-  const timeoutId = setTimeout(() => removeToast(toast), duration);
-  toast.dataset.timeoutId = timeoutId;
 }
 
-function removeToast(toast) {
-  const timeoutId = toast.dataset.timeoutId;
-  if (timeoutId) clearTimeout(parseInt(timeoutId));
-  toast.classList.add("toast-hide");
-  toast.addEventListener("animationend", () => toast.remove(), { once: true });
-}
-
-// ================================================
-// MODAL FUNCTIONS
-// ================================================
-function openModal(modalElement) {
-  if (modalElement) modalElement.classList.add("active");
-}
-
-function closeModal(modalElement) {
-  if (modalElement) modalElement.classList.remove("active");
-}
-
-// ================================================
-// BUDGET CRUD OPERATIONS
-// ================================================
-function getBudgetsForCurrentMonth() {
-  const monthKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}`;
-  return currentBudgets.filter((b) => b.month === monthKey);
-}
-
-function addBudget(budget) {
-  const newId = Math.max(...currentBudgets.map((b) => b.id), 0) + 1;
-  const newBudget = { ...budget, id: newId, spent: 0 };
-  currentBudgets.push(newBudget);
-  return newBudget;
-}
-
-function updateBudget(budgetId, newLimit) {
-  const index = currentBudgets.findIndex((b) => b.id === budgetId);
-  if (index !== -1) {
-    currentBudgets[index].limit = newLimit;
-    return true;
-  }
-  return false;
-}
-
-function deleteBudget(budgetId) {
-  currentBudgets = currentBudgets.filter((b) => b.id !== budgetId);
-}
-
-// ================================================
-// CUSTOM CATEGORY CRUD OPERATIONS
-// ================================================
-function addCustomCategory(categoryName, icon) {
-  const newId = Math.max(...customCategories.map((c) => c.id), 0) + 1;
-  customCategories.push({
-    id: newId,
-    name: categoryName,
-    icon: icon || "category",
-    iconType: "default",
+// ── Summary cards ─────────────────────────────────────────────
+function renderSummaryCards() {
+  // Filter limits to current month
+  const monthLimits = categoryLimits.filter((l) => {
+    const budget = budgets.find((b) => b.id === l.budget);
+    return budget && budget.month === getMonthNum() && budget.year === getYearNum();
   });
-  return newId;
+
+  const totalBudget    = monthLimits.reduce((s, l) => s + parseFloat(l.limit  || 0), 0);
+  const totalSpent     = monthLimits.reduce((s, l) => s + parseFloat(l.spent  || 0), 0);
+  const totalRemaining = totalBudget - totalSpent;
+
+  totalBudgetEl.textContent    = fmt(totalBudget);
+  totalSpentEl.textContent     = fmt(totalSpent);
+  totalRemainingEl.textContent = fmt(totalRemaining);
+  if (totalRemaining < 0) totalRemainingEl.style.color = "var(--color-danger, #ef4444)";
 }
 
-function updateCustomCategory(categoryId, newName, newIcon) {
-  const index = customCategories.findIndex((c) => c.id === categoryId);
-  if (index !== -1) {
-    customCategories[index].name = newName;
-    if (newIcon) customCategories[index].icon = newIcon;
-    return true;
-  }
-  return false;
-}
+// ── Main render: budget cards ─────────────────────────────────
+const PREDEFINED_CATS = ["Dining & Drinks","Shopping","Transportation","Entertainment","Utilities","Health"];
 
-function deleteCustomCategory(categoryId, categoryName) {
-  customCategories = customCategories.filter((c) => c.id !== categoryId);
-  const monthKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}`;
-  currentBudgets = currentBudgets.filter(
-    (b) => !(b.category === categoryName && b.month === monthKey),
+// Returns the category ID for a given name (looks up loaded categories list)
+function getCategoryId(catName) {
+  const found = categories.find(
+    (c) => c.name.toLowerCase() === catName.toLowerCase()
   );
-}
-
-// ================================================
-// SET BUDGET MODAL HANDLERS
-// ================================================
-let currentSetBudgetCategory = null;
-let currentSetBudgetHasBudget = false;
-let currentSetBudgetId = null;
-
-function openSetBudgetModal(category, hasBudget, budgetId, currentLimit) {
-  currentSetBudgetCategory = category;
-  currentSetBudgetHasBudget = hasBudget;
-  currentSetBudgetId = budgetId;
-
-  setBudgetTitle.textContent = hasBudget ? "Edit Budget" : "Set Budget";
-  setBudgetCategory.value = category;
-  setBudgetLimitInput.value = currentLimit || "";
-  openModal(setBudgetModal);
-}
-
-function handleSetBudgetSubmit(event) {
-  event.preventDefault();
-
-  const newLimit = parseFloat(setBudgetLimitInput.value);
-  const monthKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}`;
-
-  if (isNaN(newLimit) || newLimit <= 0) {
-    showToast(
-      "Invalid Amount",
-      "Please enter a valid positive number.",
-      "error",
-    );
-    return;
-  }
-
-  if (currentSetBudgetHasBudget) {
-    updateBudget(currentSetBudgetId, newLimit);
-    showToast(
-      "Budget Updated",
-      `${currentSetBudgetCategory} budget updated to $${newLimit.toLocaleString()}.`,
-      "success",
-    );
-  } else {
-    addBudget({
-      category: currentSetBudgetCategory,
-      limit: newLimit,
-      month: monthKey,
-    });
-    showToast(
-      "Budget Created",
-      `$${newLimit.toLocaleString()} budget for ${currentSetBudgetCategory}.`,
-      "success",
-    );
-  }
-
-  closeModal(setBudgetModal);
-  renderBudgets();
-}
-
-// ================================================
-// DELETE BUDGET MODAL HANDLERS
-// ================================================
-function openDeleteBudgetModal(category) {
-  pendingCategoryName = category;
-  deleteTitle.textContent = "Delete Budget?";
-  deleteMessage.textContent = `Are you sure you want to delete the budget for "${category}"?`;
-  openModal(deleteConfirmModal);
-}
-
-function closeDeleteBudgetModal() {
-  closeModal(deleteConfirmModal);
-  pendingCategoryName = null;
-}
-
-function handleDeleteBudgetConfirm() {
-  const monthBudgets = getBudgetsForCurrentMonth();
-  const budget = monthBudgets.find((b) => b.category === pendingCategoryName);
-  if (budget) {
-    deleteBudget(budget.id);
-    showToast(
-      "Budget Deleted",
-      `Budget for "${pendingCategoryName}" has been removed.`,
-      "info",
-    );
-    renderBudgets();
-  }
-  closeDeleteBudgetModal();
-}
-
-// ================================================
-// EDIT CUSTOM CATEGORY HANDLERS
-// ================================================
-function openEditCustomCategoryModal(categoryId, categoryName, currentIcon) {
-  pendingCategoryId = categoryId;
-  editCategoryNameInput.value = categoryName;
-  const option = Array.from(editCategoryIcon.options).find(
-    (opt) => opt.value === currentIcon,
-  );
-  if (option) editCategoryIcon.value = currentIcon;
-  openModal(editCategoryModal);
-}
-
-function handleEditCategorySubmit(event) {
-  event.preventDefault();
-  const newName = editCategoryNameInput.value.trim();
-  const newIcon = editCategoryIcon.value;
-
-  if (!newName) {
-    showToast("Invalid Name", "Please enter a category name.", "error");
-    return;
-  }
-
-  updateCustomCategory(pendingCategoryId, newName, newIcon);
-  showToast("Category Updated", `Category renamed to "${newName}".`, "success");
-  closeModal(editCategoryModal);
-  renderBudgets();
-}
-
-// ================================================
-// DELETE CUSTOM CATEGORY HANDLERS
-// ================================================
-function openDeleteCustomCategoryModal(categoryId, categoryName) {
-  pendingCategoryId = categoryId;
-  pendingCategoryName = categoryName;
-  deleteCategoryTitle.textContent = "Delete Custom Category?";
-  deleteCategoryMessage.textContent = `Are you sure you want to delete "${categoryName}"?`;
-  openModal(deleteCategoryConfirmModal);
-}
-
-function closeDeleteCustomCategoryModal() {
-  closeModal(deleteCategoryConfirmModal);
-  pendingCategoryId = null;
-  pendingCategoryName = null;
-}
-
-function handleDeleteCategoryConfirm() {
-  if (pendingCategoryId && pendingCategoryName) {
-    deleteCustomCategory(pendingCategoryId, pendingCategoryName);
-    showToast(
-      "Category Deleted",
-      `"${pendingCategoryName}" has been removed.`,
-      "info",
-    );
-    closeDeleteCustomCategoryModal();
-    renderBudgets();
-  }
-}
-
-// ================================================
-// RENDER FUNCTIONS
-// ================================================
-function getIconForCategory(categoryName) {
-  const predefined = PREDEFINED_CATEGORIES.find((c) => c.name === categoryName);
-  if (predefined)
-    return { icon: predefined.icon, iconType: predefined.iconType };
-  const custom = customCategories.find((c) => c.name === categoryName);
-  if (custom) return { icon: custom.icon || "category", iconType: "default" };
-  return { icon: "category", iconType: "default" };
+  return found ? found.id : null;
 }
 
 function renderBudgets() {
-  if (!budgetsContainer) return;
+  const monthBudget = budgets.find(
+    (b) => b.month === getMonthNum() && b.year === getYearNum()
+  );
 
-  const monthBudgets = getBudgetsForCurrentMonth();
-  const categoriesToShow =
-    currentView === "predefined" ? PREDEFINED_CATEGORIES : customCategories;
+  const monthLimits = categoryLimits.filter((l) => l.budget === monthBudget?.id);
 
-  const totalBudget = monthBudgets.reduce((sum, b) => sum + b.limit, 0);
-  const totalSpent = monthBudgets.reduce((sum, b) => sum + b.spent, 0);
+  if (currentView === "predefined") {
+    renderPredefinedView(monthBudget, monthLimits);
+  } else {
+    renderCustomView(monthBudget, monthLimits);
+  }
+}
 
-  document.getElementById("totalBudget").textContent =
-    `$${totalBudget.toLocaleString()}`;
-  document.getElementById("totalSpent").textContent =
-    `$${totalSpent.toLocaleString()}`;
-  document.getElementById("totalRemaining").textContent =
-    `$${(totalBudget - totalSpent).toLocaleString()}`;
-
-  budgetsContainer.innerHTML = "";
-
-  if (categoriesToShow.length === 0 && currentView === "custom") {
-    budgetsContainer.innerHTML = `
-      <div class="empty-custom-state">
-        <span class="material-symbols-outlined">edit_note</span>
-        <h3>No Custom Categories Yet</h3>
-        <p>Create your own categories to track specific expenses</p>
-        <button class="add-custom-category-btn" id="emptyAddCustomBtn">+ Create Custom Category</button>
-      </div>
-    `;
-    const emptyAddBtn = document.getElementById("emptyAddCustomBtn");
-    if (emptyAddBtn)
-      emptyAddBtn.addEventListener("click", openCustomCategoryModal);
+function renderPredefinedView(monthBudget, monthLimits) {
+  if (!PREDEFINED_CATS.length) {
+    budgetsContainer.innerHTML = `<p class="empty-msg">No predefined categories.</p>`;
     return;
   }
 
-  categoriesToShow.forEach((category) => {
-    const categoryName = category.name || category;
-    const budget = monthBudgets.find((b) => b.category === categoryName);
-    const hasBudget = !!budget;
-    const limit = budget ? budget.limit : 0;
-    const spent = budget ? budget.spent : 0;
-    const percentage = limit > 0 ? (spent / limit) * 100 : 0;
+  budgetsContainer.innerHTML = PREDEFINED_CATS.map((catName) => {
+    const limit = monthLimits.find((l) => l.category_name === catName);
+    return buildBudgetCard(catName, limit, monthBudget, false);
+  }).join("");
 
-    let statusClass = "good",
-      statusText = "";
-    if (hasBudget) {
-      if (percentage >= 100) {
-        statusClass = "danger";
-        statusText = "🚨 Exceeded!";
-      } else if (percentage >= 90) {
-        statusClass = "danger";
-        statusText = "⚠️ Critical!";
-      } else if (percentage >= 75) {
-        statusClass = "warning";
-        statusText = "⚠️ Getting close";
-      } else {
-        statusClass = "good";
-        statusText = "✅ On track";
-      }
-    }
+  attachCardListeners();
+}
 
-    const { icon, iconType } = getIconForCategory(categoryName);
-    const isCustom = currentView === "custom";
+function renderCustomView(monthBudget, monthLimits) {
+  const addCatBtn = `
+    <button class="btn btn--secondary add-custom-cat-btn" style="margin-bottom:1.5rem;">
+      <span class="material-symbols-outlined">add</span> Add Custom Category
+    </button>`;
 
-    const card = document.createElement("div");
-    card.className = `budget-card`;
-    card.setAttribute("data-category", categoryName);
-    card.innerHTML = `
+  if (!customCategories.length) {
+    budgetsContainer.innerHTML = addCatBtn + `
+      <p class="empty-msg" style="color:var(--color-muted);text-align:center;padding:2rem">
+        No custom categories yet. Create one to get started.
+      </p>`;
+    document.querySelector(".add-custom-cat-btn")?.addEventListener("click", openAddCustomCatModal);
+    return;
+  }
+
+  budgetsContainer.innerHTML = addCatBtn +
+    customCategories.map((cat) => {
+      const limit = monthLimits.find((l) => l.category === cat.id || l.category_name === cat.name);
+      return buildBudgetCard(cat.name, limit, monthBudget, true, cat.id);
+    }).join("");
+
+  document.querySelector(".add-custom-cat-btn")?.addEventListener("click", openAddCustomCatModal);
+  attachCardListeners();
+}
+
+function buildBudgetCard(catName, limit, monthBudget, isCustom, catId = null) {
+  const hasLimit   = !!limit;
+  const spent      = parseFloat(limit?.spent  || 0);
+  const budgetAmt  = parseFloat(limit?.limit  || 0);
+  const remaining  = parseFloat(limit?.remaining || (budgetAmt - spent));
+  const progress   = budgetAmt > 0 ? Math.min(100, (spent / budgetAmt) * 100) : 0;
+  const status     = limit?.status || "active";
+
+  const barColor =
+    progress >= 90 ? "var(--color-danger, #ef4444)" :
+    progress >= 75 ? "var(--color-warning, #f59e0b)" :
+    "var(--color-primary, #6366f1)";
+
+  const statusBadge =
+    progress >= 100 ? `<span class="budget-status budget-status--over">Over budget</span>` :
+    progress >= 75  ? `<span class="budget-status budget-status--warning">⚠ Near limit</span>` :
+    progress > 0    ? `<span class="budget-status budget-status--ok">On track</span>` : "";
+
+  const editDeleteBtns = isCustom ? `
+    <button class="icon-btn edit-cat-btn" data-cat-id="${catId}" data-cat-name="${catName}" title="Edit category">
+      <span class="material-symbols-outlined">edit</span>
+    </button>
+    <button class="icon-btn delete-cat-btn" data-cat-id="${catId}" data-cat-name="${catName}" title="Delete category">
+      <span class="material-symbols-outlined">delete</span>
+    </button>` : "";
+
+  if (!hasLimit || !monthBudget) {
+    return `
+      <div class="budget-card budget-card--empty">
+        <div class="budget-card__header">
+          <h4 class="budget-card__name">${catName}</h4>
+          <div class="budget-card__actions">${editDeleteBtns}</div>
+        </div>
+        <p class="budget-card__no-budget">No budget set for ${getMonthLabel()}</p>
+        <button class="btn btn--secondary set-budget-btn"
+          data-cat-name="${catName}"
+          data-cat-id="${catId || ""}"
+          data-limit-id=""
+          data-budget-id="${monthBudget?.id || ""}">
+          <span class="material-symbols-outlined">add</span> Set Budget
+        </button>
+      </div>`;
+  }
+
+  return `
+    <div class="budget-card" data-limit-id="${limit.id}">
       <div class="budget-card__header">
-        <div class="budget-card__icon budget-card__icon--${iconType}">
-          <span class="material-symbols-outlined">${icon}</span>
+        <h4 class="budget-card__name">${catName}</h4>
+        <div class="budget-card__actions">
+          ${statusBadge}
+          ${editDeleteBtns}
+          <button class="icon-btn set-budget-btn"
+            data-cat-name="${catName}"
+            data-cat-id="${catId || ""}"
+            data-limit-id="${limit.id}"
+            data-limit="${budgetAmt}"
+            data-budget-id="${limit.budget}"
+            title="Edit limit">
+            <span class="material-symbols-outlined">edit</span>
+          </button>
+          <button class="icon-btn delete-budget-btn"
+            data-limit-id="${limit.id}"
+            data-cat-name="${catName}"
+            title="Delete budget">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
         </div>
-        <div class="budget-card__info">
-          <h4 class="budget-card__name">${categoryName}${isCustom ? '<span class="custom-badge">Custom</span>' : ""}</h4>
-          <p class="budget-card__period">Monthly Budget</p>
-        </div>
-        ${
-          isCustom
-            ? `
-          <div class="custom-category-actions">
-            <button class="edit-category-btn" data-id="${category.id}" data-category="${categoryName}" data-icon="${icon}">
-              <span class="material-symbols-outlined">edit</span>
-            </button>
-            <button class="delete-category-btn" data-id="${category.id}" data-category="${categoryName}">
-              <span class="material-symbols-outlined">delete</span>
-            </button>
-          </div>
-        `
-            : ""
-        }
       </div>
-      <div class="budget-card__progress">
-        <div class="progress-bar">
-          <div class="progress-fill progress-fill--${statusClass}" style="width: ${Math.min(percentage, 100)}%"></div>
-        </div>
-        <div class="progress-stats">
-          <span class="spent">$${spent.toLocaleString()} spent</span>
-          <span class="limit">${hasBudget ? `of $${limit.toLocaleString()} limit` : "No budget set"}</span>
+      <div class="budget-card__amounts">
+        <span>${fmt(spent)} spent</span>
+        <span>${fmt(budgetAmt)} limit</span>
+      </div>
+      <div class="budget-progress-track">
+        <div class="budget-progress-fill"
+          style="width:${progress.toFixed(1)}%;background:${barColor}">
         </div>
       </div>
       <div class="budget-card__footer">
-        <button class="set-budget-btn" data-category="${categoryName}" data-has-budget="${hasBudget}" data-budget-id="${budget ? budget.id : ""}" data-limit="${limit}">
-          <span class="material-symbols-outlined">${hasBudget ? "edit" : "add"}</span>
-          ${hasBudget ? "Edit Budget" : "Set Budget"}
-        </button>
-        ${
-          hasBudget
-            ? `
-          <button class="delete-budget-btn" data-category="${categoryName}">
-            <span class="material-symbols-outlined">delete</span>
-          </button>
-        `
-            : ""
-        }
-        <span class="budget-status budget-status--${statusClass}">${statusText}</span>
+        <span>${fmt(remaining)} remaining</span>
+        <span>${progress.toFixed(0)}%</span>
       </div>
-    `;
-    budgetsContainer.appendChild(card);
-  });
-
-  if (currentView === "custom") {
-    const addCustomCard = document.createElement("div");
-    addCustomCard.className = "budget-card budget-card--add";
-    addCustomCard.innerHTML = `<button class="add-budget-btn" id="addCustomCategoryFooterBtn"><span class="material-symbols-outlined">add_circle</span><p>Create New Custom Category</p></button>`;
-    budgetsContainer.appendChild(addCustomCard);
-    const addFooterBtn = document.getElementById("addCustomCategoryFooterBtn");
-    if (addFooterBtn)
-      addFooterBtn.addEventListener("click", openCustomCategoryModal);
-  }
-
-  attachEventListeners();
+    </div>`;
 }
 
-function attachEventListeners() {
+function attachCardListeners() {
+  // Set / edit budget
   document.querySelectorAll(".set-budget-btn").forEach((btn) => {
-    btn.removeEventListener("click", handleSetBudgetClick);
-    btn.addEventListener("click", handleSetBudgetClick);
-  });
-
-  document.querySelectorAll(".delete-budget-btn").forEach((btn) => {
-    btn.removeEventListener("click", handleDeleteBudgetClick);
-    btn.addEventListener("click", handleDeleteBudgetClick);
-  });
-
-  document.querySelectorAll(".edit-category-btn").forEach((btn) => {
-    btn.removeEventListener("click", handleEditCategoryClick);
-    btn.addEventListener("click", handleEditCategoryClick);
-  });
-
-  document.querySelectorAll(".delete-category-btn").forEach((btn) => {
-    btn.removeEventListener("click", handleDeleteCategoryClick);
-    btn.addEventListener("click", handleDeleteCategoryClick);
-  });
-}
-
-function handleSetBudgetClick(e) {
-  const btn = e.currentTarget;
-  const category = btn.getAttribute("data-category");
-  const hasBudget = btn.getAttribute("data-has-budget") === "true";
-  const budgetId = hasBudget
-    ? parseInt(btn.getAttribute("data-budget-id"))
-    : null;
-  const currentLimit = parseFloat(btn.getAttribute("data-limit")) || 0;
-  openSetBudgetModal(category, hasBudget, budgetId, currentLimit);
-}
-
-function handleDeleteBudgetClick(e) {
-  const btn = e.currentTarget;
-  const category = btn.getAttribute("data-category");
-  openDeleteBudgetModal(category);
-}
-
-function handleEditCategoryClick(e) {
-  const btn = e.currentTarget;
-  const categoryId = parseInt(btn.getAttribute("data-id"));
-  const categoryName = btn.getAttribute("data-category");
-  const currentIcon = btn.getAttribute("data-icon") || "category";
-  openEditCustomCategoryModal(categoryId, categoryName, currentIcon);
-}
-
-function handleDeleteCategoryClick(e) {
-  const btn = e.currentTarget;
-  const categoryId = parseInt(btn.getAttribute("data-id"));
-  const categoryName = btn.getAttribute("data-category");
-  openDeleteCustomCategoryModal(categoryId, categoryName);
-}
-
-// ================================================
-// VIEW TOGGLE & MONTH NAVIGATION
-// ================================================
-function setView(view) {
-  currentView = view;
-  if (view === "predefined") {
-    showPredefinedBtn.classList.add("toggle-btn--active");
-    showCustomBtn.classList.remove("toggle-btn--active");
-  } else {
-    showCustomBtn.classList.add("toggle-btn--active");
-    showPredefinedBtn.classList.remove("toggle-btn--active");
-  }
-  renderBudgets();
-}
-
-function updateMonthDisplay() {
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  if (currentMonthEl)
-    currentMonthEl.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-  renderBudgets();
-}
-
-function prevMonth() {
-  currentDate.setMonth(currentDate.getMonth() - 1);
-  updateMonthDisplay();
-}
-function nextMonth() {
-  currentDate.setMonth(currentDate.getMonth() + 1);
-  updateMonthDisplay();
-}
-
-// ================================================
-// CREATE BUDGET MODAL
-// ================================================
-function openCreateBudgetModal() {
-  const categorySelect = document.getElementById("categorySelect");
-  if (categorySelect) {
-    categorySelect.innerHTML = "";
-    const categoriesToShow =
-      currentView === "predefined" ? PREDEFINED_CATEGORIES : customCategories;
-    categoriesToShow.forEach((cat) => {
-      const option = document.createElement("option");
-      const categoryName = typeof cat === "object" ? cat.name : cat;
-      option.value = categoryName;
-      option.textContent = categoryName;
-      categorySelect.appendChild(option);
+    btn.addEventListener("click", () => {
+      const { catName, catId, limitId, budgetId, limit } = btn.dataset;
+      openSetBudgetModal(catName, catId, limitId, budgetId, limit);
     });
-  }
-  const budgetMonth = document.getElementById("budgetMonth");
-  if (budgetMonth)
-    budgetMonth.value = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}`;
-  const budgetLimit = document.getElementById("budgetLimit");
-  if (budgetLimit) budgetLimit.value = "";
-  openModal(modal);
-}
+  });
 
-function handleCreateBudgetSubmit(event) {
-  event.preventDefault();
-  const category = document.getElementById("categorySelect").value;
-  const limit = parseFloat(document.getElementById("budgetLimit").value);
-  const month = document.getElementById("budgetMonth").value;
+  // Delete budget limit
+  document.querySelectorAll(".delete-budget-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      pendingDeleteId   = btn.dataset.limitId;
+      pendingDeleteType = "budget";
+      deleteMsg.textContent = `Delete budget for "${btn.dataset.catName}"? This cannot be undone.`;
+      openModal(deleteModal);
+    });
+  });
 
-  if (!category) {
-    showToast("Missing Information", "Please select a category.", "error");
-    return;
-  }
-  if (isNaN(limit) || limit <= 0) {
-    showToast("Invalid Amount", "Please enter a valid budget amount.", "error");
-    return;
-  }
-  if (!month) {
-    showToast("Missing Information", "Please select a month.", "error");
-    return;
-  }
+  // Edit custom category
+  document.querySelectorAll(".edit-cat-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      editingCategoryId          = btn.dataset.catId;
+      editCatNameInput.value     = btn.dataset.catName;
+      openModal(editCatModal);
+    });
+  });
 
-  const existingBudget = currentBudgets.find(
-    (b) => b.category === category && b.month === month,
-  );
-  if (existingBudget) {
-    if (
-      confirm(
-        `A budget for ${category} already exists for this month. Do you want to update it?`,
-      )
-    ) {
-      updateBudget(existingBudget.id, limit);
-      showToast(
-        "Budget Updated",
-        `${category} budget updated to $${limit.toLocaleString()}.`,
-        "success",
-      );
-    }
-  } else {
-    addBudget({ category, limit, month });
-    showToast(
-      "Budget Created",
-      `$${limit.toLocaleString()} budget for ${category}.`,
-      "success",
-    );
-  }
-  closeModal(modal);
-  renderBudgets();
-}
-
-// ================================================
-// CUSTOM CATEGORY MODAL
-// ================================================
-function openCustomCategoryModal() {
-  document.getElementById("customCategoryName").value = "";
-  openModal(customCategoryModal);
-}
-
-function handleAddCustomCategorySubmit(event) {
-  event.preventDefault();
-  const name = document.getElementById("customCategoryName").value.trim();
-  const icon = document.getElementById("customCategoryIcon").value;
-
-  if (!name) {
-    showToast("Missing Information", "Please enter a category name.", "error");
-    return;
-  }
-
-  const predefinedNames = PREDEFINED_CATEGORIES.map((c) => c.name);
-  const customNames = customCategories.map((c) => c.name);
-
-  if (predefinedNames.includes(name)) {
-    showToast("Cannot Add", `"${name}" is a predefined category.`, "warning");
-    return;
-  }
-  if (customNames.includes(name)) {
-    showToast("Category Exists", `"${name}" already exists.`, "warning");
-    return;
-  }
-
-  addCustomCategory(name, icon);
-  showToast("Category Added", `"${name}" has been added.`, "success");
-  closeModal(customCategoryModal);
-  setView("custom");
-}
-
-// ================================================
-// EVENT LISTENERS SETUP
-// ================================================
-function setupEventListeners() {
-  if (createBudgetBtn)
-    createBudgetBtn.addEventListener("click", openCreateBudgetModal);
-  if (modalClose) modalClose.addEventListener("click", () => closeModal(modal));
-  if (cancelBtn) cancelBtn.addEventListener("click", () => closeModal(modal));
-  if (budgetForm)
-    budgetForm.addEventListener("submit", handleCreateBudgetSubmit);
-  if (showPredefinedBtn)
-    showPredefinedBtn.addEventListener("click", () => setView("predefined"));
-  if (showCustomBtn)
-    showCustomBtn.addEventListener("click", () => setView("custom"));
-  if (prevMonthBtn) prevMonthBtn.addEventListener("click", prevMonth);
-  if (nextMonthBtn) nextMonthBtn.addEventListener("click", nextMonth);
-
-  // Set Budget Modal
-  if (setBudgetClose)
-    setBudgetClose.addEventListener("click", () => closeModal(setBudgetModal));
-  if (setBudgetCancel)
-    setBudgetCancel.addEventListener("click", () => closeModal(setBudgetModal));
-  if (setBudgetForm)
-    setBudgetForm.addEventListener("submit", handleSetBudgetSubmit);
-
-  // Delete Budget Modal
-  const deleteBudgetClose = document.querySelector(".delete-budget-close");
-  const deleteBudgetCancel = document.querySelector(".delete-budget-cancel");
-  if (deleteBudgetClose)
-    deleteBudgetClose.addEventListener("click", closeDeleteBudgetModal);
-  if (deleteBudgetCancel)
-    deleteBudgetCancel.addEventListener("click", closeDeleteBudgetModal);
-  if (deleteConfirmBtn)
-    deleteConfirmBtn.addEventListener("click", handleDeleteBudgetConfirm);
-
-  // Edit Custom Category Modal
-  if (editCategoryClose)
-    editCategoryClose.addEventListener("click", () =>
-      closeModal(editCategoryModal),
-    );
-  if (editCategoryCancel)
-    editCategoryCancel.addEventListener("click", () =>
-      closeModal(editCategoryModal),
-    );
-  if (editCategoryForm)
-    editCategoryForm.addEventListener("submit", handleEditCategorySubmit);
-
-  // Delete Custom Category Modal
-  const deleteCategoryClose = document.querySelector(".delete-category-close");
-  const deleteCategoryCancel = document.querySelector(
-    ".delete-category-cancel",
-  );
-  if (deleteCategoryClose)
-    deleteCategoryClose.addEventListener(
-      "click",
-      closeDeleteCustomCategoryModal,
-    );
-  if (deleteCategoryCancel)
-    deleteCategoryCancel.addEventListener(
-      "click",
-      closeDeleteCustomCategoryModal,
-    );
-  if (deleteCategoryConfirmBtn)
-    deleteCategoryConfirmBtn.addEventListener(
-      "click",
-      handleDeleteCategoryConfirm,
-    );
-
-  // Custom Category Modal
-  if (customModalClose)
-    customModalClose.addEventListener("click", () =>
-      closeModal(customCategoryModal),
-    );
-  if (cancelCustomBtn)
-    cancelCustomBtn.addEventListener("click", () =>
-      closeModal(customCategoryModal),
-    );
-  if (customCategoryForm)
-    customCategoryForm.addEventListener(
-      "submit",
-      handleAddCustomCategorySubmit,
-    );
-
-  // Close modals on outside click
-  window.addEventListener("click", (event) => {
-    if (event.target === modal) closeModal(modal);
-    if (event.target === setBudgetModal) closeModal(setBudgetModal);
-    if (event.target === deleteConfirmModal) closeModal(deleteConfirmModal);
-    if (event.target === editCategoryModal) closeModal(editCategoryModal);
-    if (event.target === deleteCategoryConfirmModal)
-      closeModal(deleteCategoryConfirmModal);
-    if (event.target === customCategoryModal) closeModal(customCategoryModal);
+  // Delete custom category
+  document.querySelectorAll(".delete-cat-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      pendingDeleteId   = btn.dataset.catId;
+      pendingDeleteType = "category";
+      openModal(deleteCatModal);
+    });
   });
 }
 
-// ================================================
-// INITIALIZATION
-// ================================================
-function init() {
-  initializeDefaultData();
-  updateMonthDisplay();
-  setView("predefined");
-  setupEventListeners();
+// ── Populate category dropdown in create-budget modal ────────
+function populateCategoryDropdown() {
+  const cats = currentView === "predefined"
+    ? PREDEFINED_CATS.map((n) => ({ name: n }))
+    : customCategories;
 
-  setTimeout(() => {
-    showToast(
-      "Welcome to Budgets! 📊",
-      "⚠️ All data resets when you refresh the page. This is temporary until backend is connected.",
-      "info",
-      5000,
-    );
-  }, 500);
+  categorySelect.innerHTML = cats
+    .map((c) => `<option value="${c.name}">${c.name}</option>`)
+    .join("");
 }
 
-init();
+// ── Month navigation ──────────────────────────────────────────
+prevMonthBtn.addEventListener("click", () => {
+  displayDate.setMonth(displayDate.getMonth() - 1);
+  updateMonthDisplay();
+  renderSummaryCards();
+  renderBudgets();
+});
+nextMonthBtn.addEventListener("click", () => {
+  displayDate.setMonth(displayDate.getMonth() + 1);
+  updateMonthDisplay();
+  renderSummaryCards();
+  renderBudgets();
+});
+
+// ── Toggle predefined / custom ────────────────────────────────
+showPredefinedBtn.addEventListener("click", () => {
+  currentView = "predefined";
+  showPredefinedBtn.classList.add("toggle-btn--active");
+  showCustomBtn.classList.remove("toggle-btn--active");
+  populateCategoryDropdown();
+  renderBudgets();
+});
+showCustomBtn.addEventListener("click", () => {
+  currentView = "custom";
+  showCustomBtn.classList.add("toggle-btn--active");
+  showPredefinedBtn.classList.remove("toggle-btn--active");
+  populateCategoryDropdown();
+  renderBudgets();
+});
+
+// ── Create budget modal ───────────────────────────────────────
+createBudgetBtn.addEventListener("click", () => {
+  budgetMonthInput.value = `${getYearNum()}-${String(getMonthNum()).padStart(2,"0")}`;
+  openModal(createBudgetModal);
+});
+
+budgetForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const catName  = categorySelect.value;
+  const limit    = parseFloat(budgetLimitInput.value);
+  const monthVal = budgetMonthInput.value; // "YYYY-MM"
+
+  if (!catName || !limit || limit <= 0) {
+    toast("Please fill in all fields.", "error");
+    return;
+  }
+
+  const [year, month] = monthVal.split("-").map(Number);
+
+  try {
+    // Get or create the month budget
+    let budget = budgets.find((b) => b.month === month && b.year === year);
+    if (!budget) {
+      budget = await apiFetch("/api/finance/budgets/", {
+        method: "POST",
+        body: JSON.stringify({ name: `${MONTHS[month-1]} ${year}`, month, year, total_limit: "0" }),
+      });
+      budgets.push(budget);
+    }
+
+    const categoryId = getCategoryId(catName);
+    if (!categoryId) {
+      toast(`Category "${catName}" not found. Try reloading the page.`, "error");
+      return;
+    }
+    const newLimit = await apiFetch("/api/finance/budget-category-limits/", {
+      method: "POST",
+      body: JSON.stringify({ budget: budget.id, category: categoryId, category_name: catName, limit: limit.toString(), month: monthVal }),
+    });
+
+    categoryLimits.push(newLimit);
+    toast(`Budget for "${catName}" created!`);
+    closeModal(createBudgetModal);
+    budgetForm.reset();
+    renderSummaryCards();
+    renderBudgets();
+  } catch (err) {
+    toast(err?.detail || err?.non_field_errors?.[0] || "Failed to create budget.", "error");
+  }
+});
+
+// ── Set/Edit budget modal ─────────────────────────────────────
+function openSetBudgetModal(catName, catId, limitId, budgetId, currentLimit) {
+  setBudgetTitle.textContent  = limitId ? `Edit Budget — ${catName}` : `Set Budget — ${catName}`;
+  setBudgetCatInput.value     = catName;
+  setBudgetLimitInput.value   = currentLimit || "";
+  setBudgetForm.dataset.catName  = catName;
+  setBudgetForm.dataset.catId    = catId || "";
+  setBudgetForm.dataset.limitId  = limitId || "";
+  setBudgetForm.dataset.budgetId = budgetId || "";
+  openModal(setBudgetModal);
+}
+
+setBudgetForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const { catName, catId, limitId, budgetId } = setBudgetForm.dataset;
+  const newLimit = parseFloat(setBudgetLimitInput.value);
+  if (!newLimit || newLimit <= 0) {
+    toast("Please enter a valid limit.", "error");
+    return;
+  }
+
+  try {
+    if (limitId) {
+      // Update existing limit
+      const updated = await apiFetch(`/api/finance/budget-category-limits/${limitId}/`, {
+        method: "PATCH",
+        body: JSON.stringify({ limit: newLimit.toString() }),
+      });
+      const idx = categoryLimits.findIndex((l) => l.id === parseInt(limitId));
+      if (idx !== -1) categoryLimits[idx] = updated;
+    } else {
+      // Need a budget first
+      let budget = budgets.find((b) => b.id === parseInt(budgetId));
+      if (!budget) {
+        budget = await apiFetch("/api/finance/budgets/", {
+          method: "POST",
+          body: JSON.stringify({
+            name: getMonthLabel(), month: getMonthNum(), year: getYearNum(), total_limit: "0",
+          }),
+        });
+        budgets.push(budget);
+      }
+      const categoryId = getCategoryId(catName);
+      if (!categoryId) {
+        toast(`Category "${catName}" not found. Try reloading the page.`, "error");
+        return;
+      }
+      const created = await apiFetch("/api/finance/budget-category-limits/", {
+        method: "POST",
+        body: JSON.stringify({
+          budget: budget.id,
+          category: categoryId,
+          category_name: catName,
+          limit: newLimit.toString(),
+          month: `${getYearNum()}-${String(getMonthNum()).padStart(2,"0")}`,
+        }),
+      });
+      categoryLimits.push(created);
+    }
+    toast("Budget saved!");
+    closeModal(setBudgetModal);
+    renderSummaryCards();
+    renderBudgets();
+  } catch (err) {
+    toast(err?.detail || "Failed to save budget.", "error");
+  }
+});
+
+// ── Delete budget confirm ─────────────────────────────────────
+deleteConfirmBtn.addEventListener("click", async () => {
+  if (!pendingDeleteId) return;
+  try {
+    await apiFetch(`/api/finance/budget-category-limits/${pendingDeleteId}/`, { method: "DELETE" });
+    categoryLimits = categoryLimits.filter((l) => l.id !== parseInt(pendingDeleteId));
+    toast("Budget deleted.");
+    closeModal(deleteModal);
+    renderSummaryCards();
+    renderBudgets();
+  } catch (err) {
+    toast("Failed to delete budget.", "error");
+  }
+  pendingDeleteId = null;
+});
+
+// ── Add custom category ───────────────────────────────────────
+function openAddCustomCatModal() { openModal(addCustomCatModal); }
+
+customCatForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = customCatNameInput.value.trim();
+  if (!name) { toast("Please enter a category name.", "error"); return; }
+
+  try {
+    const cat = await apiFetch("/api/finance/categories/", {
+      method: "POST",
+      body: JSON.stringify({ name, type: "expense" }),
+    });
+    categories.push(cat);
+    customCategories.push(cat);
+    toast(`Category "${name}" added!`);
+    closeModal(addCustomCatModal);
+    customCatForm.reset();
+    renderBudgets();
+  } catch (err) {
+    toast(err?.name?.[0] || "Failed to create category.", "error");
+  }
+});
+
+// ── Edit custom category ──────────────────────────────────────
+editCatForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = editCatNameInput.value.trim();
+  if (!name || !editingCategoryId) return;
+
+  try {
+    const updated = await apiFetch(`/api/finance/categories/${editingCategoryId}/`, {
+      method: "PATCH",
+      body: JSON.stringify({ name }),
+    });
+    const idx = customCategories.findIndex((c) => c.id === parseInt(editingCategoryId));
+    if (idx !== -1) customCategories[idx] = updated;
+    const idx2 = categories.findIndex((c) => c.id === parseInt(editingCategoryId));
+    if (idx2 !== -1) categories[idx2] = updated;
+    toast("Category updated.");
+    closeModal(editCatModal);
+    renderBudgets();
+  } catch (err) {
+    toast("Failed to update category.", "error");
+  }
+});
+
+// ── Delete custom category ────────────────────────────────────
+deleteCatConfirmBtn.addEventListener("click", async () => {
+  if (!pendingDeleteId) return;
+  try {
+    await apiFetch(`/api/finance/categories/${pendingDeleteId}/`, { method: "DELETE" });
+    customCategories = customCategories.filter((c) => c.id !== parseInt(pendingDeleteId));
+    categories       = categories.filter((c) => c.id !== parseInt(pendingDeleteId));
+    toast("Category deleted.");
+    closeModal(deleteCatModal);
+    renderBudgets();
+  } catch (err) {
+    toast("Failed to delete category.", "error");
+  }
+  pendingDeleteId = null;
+});
+
+// ── Modal helpers ─────────────────────────────────────────────
+function openModal(modal)  { modal.classList.add("modal--open");    modal.style.display = "flex"; }
+function closeModal(modal) { modal.classList.remove("modal--open"); modal.style.display = "none"; }
+
+// Close buttons
+document.querySelectorAll(".modal-close, .cancel-btn, .set-budget-close, .set-budget-cancel, .modal-close-custom, .cancel-custom-btn, .edit-category-close, .edit-category-cancel, .delete-budget-close, .delete-budget-cancel, .delete-category-close, .delete-category-cancel")
+  .forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".modal").forEach(closeModal);
+    });
+  });
+
+// Click outside to close
+document.querySelectorAll(".modal").forEach((modal) => {
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal(modal);
+  });
+});
+
+// ── Init ──────────────────────────────────────────────────────
+updateMonthDisplay();
+loadAll();

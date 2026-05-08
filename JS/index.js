@@ -1,44 +1,20 @@
-const loginBtn = document.getElementById("login-btn")
+// ============================================================
+//  BudgetWise — Landing Page (index.html)
+// ============================================================
+import { getToken } from "./api.js";
 
-function ifCurrentUser(){
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'))
+const loginBtn      = document.getElementById("login-btn");
+const getStartedBtns = document.querySelectorAll(".btn--primary");
 
-    console.log(currentUser)
-    if(currentUser && window.location.pathname.includes("index.html")){
-        loginBtn.style.visibility = "hidden"
-        return true
-    }
-    return false
-}
+// If already logged in, route CTA to dashboard
+const isLoggedIn = !!getToken();
 
-loginBtn.addEventListener('click',()=>{
-    window.location.href = "login.html"
-})
+loginBtn?.addEventListener("click", () => {
+  window.location.href = isLoggedIn ? "dashboard.html" : "login.html";
+});
 
-
-const isCurrentUserFount = ifCurrentUser()
-
-
-const getStartedButtons = document.getElementsByClassName("btn")
-
-if(isCurrentUserFount){
-    Array.from(getStartedButtons).forEach(element => {
-        element.addEventListener('click',()=>{
-            window.location.href= "../HTML/dashboard.html"
-        })
-    });
-}else{
-    Array.from(getStartedButtons).forEach(element => {
-            element.addEventListener('click',()=>{
-                window.location.href= "../HTML/login.html"
-            })
-        });
-}
-
-
-
-
-
-// const currentUser = JSON.parse(localStorage.getItem('currentUser'))
-// console.log(currentUser)
-// ifCurrentUser()
+getStartedBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    window.location.href = isLoggedIn ? "dashboard.html" : "signup.html";
+  });
+});

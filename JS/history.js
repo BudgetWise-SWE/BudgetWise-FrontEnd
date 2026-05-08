@@ -1,373 +1,215 @@
-// history.js - History page functionality with WORKING date filters
+// ============================================================
+//  BudgetWise — Transaction History Page
+// ============================================================
+import { requireAuth, apiFetch, fmt, fmtDate, getCategoryMeta, toast } from "./api.js";
 
-// DOM Elements
-const searchInput = document.getElementById("searchInput");
-const categoryFilter = document.getElementById("categoryFilter");
-const typeFilter = document.getElementById("typeFilter");
-const dateFrom = document.getElementById("dateFrom");
-const dateTo = document.getElementById("dateTo");
-const resetFiltersBtn = document.getElementById("resetFilters");
-const exportBtn = document.getElementById("exportBtn");
-const toastContainer = document.getElementById("toastContainer");
-const historyTableBody = document.getElementById("historyTableBody");
+requireAuth();
 
-// ================================================
-// TOAST NOTIFICATION SYSTEM
-// ================================================
+// ── State ─────────────────────────────────────────────────────
+let allTransactions  = [];
+let filtered         = [];
+const PAGE_SIZE      = 10;
+let currentPage      = 1;
 
-function showToast(title, message, type = "info", duration = 4000) {
-  if (!toastContainer) return;
+// ── DOM refs ─────────────────────────────────────────────────
+const tbody              = document.getElementById("historyTableBody");
+const searchInput        = document.getElementById("searchInput");
+const categoryFilter     = document.getElementById("categoryFilter");
+const dateFromInput      = document.getElementById("dateFrom");
+const dateToInput        = document.getElementById("dateTo");
+const typeFilter         = document.getElementById("typeFilter");
+const resetBtn           = document.getElementById("resetFilters");
+const exportBtn          = document.getElementById("exportBtn");
 
-  const toast = document.createElement("div");
-  toast.className = `toast toast--${type}`;
+const totalTransEl       = document.getElementById("totalTransactions");
+const totalIncomeEl      = document.getElementById("totalIncome");
+const totalExpensesEl    = document.getElementById("totalExpenses");
+const netBalanceEl       = document.getElementById("netBalance");
 
-  let iconName = "info";
-  switch (type) {
-    case "success":
-      iconName = "check_circle";
-      break;
-    case "error":
-      iconName = "error";
-      break;
-    case "warning":
-      iconName = "warning";
-      break;
-    default:
-      iconName = "info";
+const pageInfoEl         = document.querySelector(".pagination__info");
+const paginationControls = document.querySelector(".pagination__controls");
+
+// ── Load ──────────────────────────────────────────────────────
+async function loadTransactions() {
+  try {
+    const data = await apiFetch("/api/finance/transactions/");
+    allTransactions = Array.isArray(data) ? data : [];
+    applyFilters();
+  } catch (err) {
+    console.error("Failed to load history:", err);
+    toast("Failed to load transaction history.", "error");
   }
-
-  toast.innerHTML = `
-    <div class="toast-icon"><span class="material-symbols-outlined">${iconName}</span></div>
-    <div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div>
-    <button class="toast-close"><span class="material-symbols-outlined">close</span></button>
-  `;
-
-  toastContainer.appendChild(toast);
-  const closeBtn = toast.querySelector(".toast-close");
-  closeBtn.addEventListener("click", () => removeToast(toast));
-  const timeoutId = setTimeout(() => removeToast(toast), duration);
-  toast.dataset.timeoutId = timeoutId;
 }
 
-function removeToast(toast) {
-  const timeoutId = toast.dataset.timeoutId;
-  if (timeoutId) clearTimeout(parseInt(timeoutId));
-  toast.classList.add("toast-hide");
-  toast.addEventListener("animationend", () => toast.remove(), { once: true });
-}
+// ── Filter ────────────────────────────────────────────────────
+function applyFilters() {
+  const search   = searchInput.value.toLowerCase();
+  const category = categoryFilter.value;
+  const dateFrom = dateFromInput.value ? new Date(dateFromInput.value) : null;
+  const dateTo   = dateToInput.value   ? new Date(dateToInput.value)   : null;
+  const type     = typeFilter.value;   // "" | "credit" | "debit"
 
-// ================================================
-// HELPER FUNCTIONS
-// ================================================
+  filtered = allTransactions.filter((tx) => {
+    const name    = (tx.name || tx.category_display_name || "").toLowerCase();
+    const notes   = (tx.notes || tx.description || "").toLowerCase();
+    const catName = tx.category_display_name || "";
+    const txDate  = new Date(tx.date || tx.dataOfTransaction);
+    const isIncome = tx.type === "income";
 
-// Parse date string like "Jun 14, 2023" to Date object
-function parseTransactionDate(dateString) {
-  if (!dateString) return null;
+    if (search   && !name.includes(search) && !notes.includes(search)) return false;
+    if (category && catName !== category && !(category === "Income" && isIncome)) return false;
+    if (dateFrom && txDate < dateFrom) return false;
+    if (dateTo   && txDate > new Date(dateTo.getTime() + 86400000)) return false;
+    if (type === "credit" && !isIncome) return false;
+    if (type === "debit"  && isIncome)  return false;
 
-  // Handle "Today" and "Yesterday"
-  if (dateString.includes("Today")) {
-    return new Date();
-  }
-  if (dateString.includes("Yesterday")) {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    return yesterday;
-  }
-
-  // Parse "MMM DD, YYYY" format
-  const monthNames = {
-    Jan: 0,
-    Feb: 1,
-    Mar: 2,
-    Apr: 3,
-    May: 4,
-    Jun: 5,
-    Jul: 6,
-    Aug: 7,
-    Sep: 8,
-    Oct: 9,
-    Nov: 10,
-    Dec: 11,
-  };
-
-  const parts = dateString.match(/(\w+)\s+(\d+),\s+(\d{4})/);
-  if (parts) {
-    const month = monthNames[parts[1]];
-    const day = parseInt(parts[2]);
-    const year = parseInt(parts[3]);
-    if (month !== undefined && !isNaN(day) && !isNaN(year)) {
-      return new Date(year, month, day);
-    }
-  }
-
-  // Fallback: try standard parsing
-  const parsed = new Date(dateString);
-  return isNaN(parsed.getTime()) ? null : parsed;
-}
-
-// Get all transaction rows
-function getTransactionRows() {
-  if (!historyTableBody) return [];
-  return Array.from(historyTableBody.querySelectorAll(".tx-row"));
-}
-
-// Update summary statistics
-function updateSummaryStats(visibleRows, totalIncome, totalExpenses) {
-  const totalTransactionsSpan = document.getElementById("totalTransactions");
-  const totalIncomeSpan = document.getElementById("totalIncome");
-  const totalExpensesSpan = document.getElementById("totalExpenses");
-  const netBalanceSpan = document.getElementById("netBalance");
-
-  if (totalTransactionsSpan)
-    totalTransactionsSpan.textContent = visibleRows.length;
-  if (totalIncomeSpan)
-    totalIncomeSpan.textContent = `$${totalIncome.toFixed(2)}`;
-  if (totalExpensesSpan)
-    totalExpensesSpan.textContent = `-$${totalExpenses.toFixed(2)}`;
-  if (netBalanceSpan)
-    netBalanceSpan.textContent = `$${(totalIncome - totalExpenses).toFixed(2)}`;
-}
-
-// Filter transactions
-function filterTransactions() {
-  const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
-  const category = categoryFilter ? categoryFilter.value : "";
-  const type = typeFilter ? typeFilter.value : "";
-  const fromDateStr = dateFrom ? dateFrom.value : "";
-  const toDateStr = dateTo ? dateTo.value : "";
-
-  // Convert filter dates to comparable format (only if both are provided)
-  let fromDate = null;
-  let toDate = null;
-  let dateFilterActive = false;
-
-  if (fromDateStr && toDateStr) {
-    fromDate = new Date(fromDateStr);
-    fromDate.setHours(0, 0, 0, 0);
-    toDate = new Date(toDateStr);
-    toDate.setHours(23, 59, 59, 999);
-    dateFilterActive = true;
-  }
-
-  const rows = getTransactionRows();
-  let visibleRows = [];
-  let totalIncome = 0;
-  let totalExpenses = 0;
-
-  rows.forEach((row) => {
-    let show = true;
-
-    // Search filter (by name or note)
-    if (searchTerm) {
-      const name =
-        row.querySelector(".tx-desc__name")?.textContent.toLowerCase() || "";
-      const note =
-        row.querySelector(".tx-desc__note")?.textContent.toLowerCase() || "";
-      if (!name.includes(searchTerm) && !note.includes(searchTerm)) {
-        show = false;
-      }
-    }
-
-    // Category filter
-    if (show && category) {
-      const rowCategory = row.querySelector(".tx-category")?.textContent || "";
-      if (rowCategory !== category) {
-        show = false;
-      }
-    }
-
-    // Type filter (Income vs Expense)
-    if (show && type) {
-      const amountSpan = row.querySelector(".tx-amount");
-      const isCredit = amountSpan?.classList.contains("tx-amount--credit");
-      if (type === "credit" && !isCredit) show = false;
-      if (type === "debit" && isCredit) show = false;
-    }
-
-    // Date range filter - ONLY apply if BOTH from AND to dates are selected
-    if (show && dateFilterActive) {
-      const dateCells = row.querySelectorAll(".tx-table__td");
-      const dateText = dateCells[2]?.textContent || "";
-      const rowDate = parseTransactionDate(dateText);
-
-      if (rowDate) {
-        if (rowDate < fromDate || rowDate > toDate) {
-          show = false;
-        }
-      }
-    }
-
-    row.style.display = show ? "" : "none";
-    if (show) {
-      visibleRows.push(row);
-
-      // Calculate totals for visible rows
-      const amountSpan = row.querySelector(".tx-amount");
-      const amountText = amountSpan?.textContent || "0";
-      const amount = parseFloat(amountText.replace(/[^0-9.-]/g, ""));
-
-      if (amountSpan?.classList.contains("tx-amount--credit")) {
-        totalIncome += amount;
-      } else {
-        totalExpenses += Math.abs(amount);
-      }
-    }
+    return true;
   });
 
-  updateSummaryStats(visibleRows, totalIncome, totalExpenses);
+  renderSummaryStats();
+  renderPage(1);
+}
 
-  // Show feedback if date filter active but no results
-  if (dateFilterActive && visibleRows.length === 0) {
-    showToast(
-      "No Results",
-      `No transactions found between ${fromDateStr} and ${toDateStr}.`,
-      "info",
-      3000,
+// ── Summary stats ─────────────────────────────────────────────
+function renderSummaryStats() {
+  const income   = filtered.filter((t) => t.type === "income")
+                           .reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+  const expense  = filtered.filter((t) => t.type === "expense")
+                           .reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+  const net      = income - expense;
+
+  totalTransEl.textContent    = filtered.length.toLocaleString();
+  totalIncomeEl.textContent   = fmt(income);
+  totalExpensesEl.textContent = `-${fmt(expense)}`;
+  netBalanceEl.textContent    = fmt(net);
+
+  if (net < 0) netBalanceEl.style.color = "var(--color-danger, #ef4444)";
+  else         netBalanceEl.style.color = "";
+}
+
+// ── Render page ───────────────────────────────────────────────
+function renderPage(page) {
+  currentPage      = page;
+  const total      = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const start      = (page - 1) * PAGE_SIZE;
+  const slice      = filtered.slice(start, start + PAGE_SIZE);
+
+  // Page info
+  const from = total === 0 ? 0 : start + 1;
+  const to   = Math.min(start + PAGE_SIZE, total);
+  pageInfoEl.textContent = `Showing ${from}–${to} of ${total.toLocaleString()} transactions`;
+
+  // Rows
+  if (!slice.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" style="text-align:center;padding:2.5rem;color:var(--color-muted)">
+          No transactions match your filters.
+        </td>
+      </tr>`;
+  } else {
+    tbody.innerHTML = slice.map((tx) => {
+      const isIncome   = tx.type === "income";
+      const catName    = tx.category_display_name || (isIncome ? "Income" : "Other");
+      const { icon, color } = getCategoryMeta(catName);
+      const amount     = fmt(tx.amount || 0);
+      const sign       = isIncome ? "+" : "-";
+      const amountCls  = isIncome ? "tx-amount--credit" : "tx-amount--debit";
+      const dateStr    = fmtDate(tx.date || tx.dataOfTransaction);
+
+      return `
+        <tr class="tx-row">
+          <td class="tx-table__td">
+            <div class="tx-desc">
+              <div class="tx-icon tx-icon--${color}">
+                <span class="material-symbols-outlined">${icon}</span>
+              </div>
+              <div class="tx-desc__text">
+                <p class="tx-desc__name">${tx.name || catName}</p>
+                <p class="tx-desc__note">${tx.notes || tx.description || ""}</p>
+              </div>
+            </div>
+          </td>
+          <td class="tx-table__td"><span class="tx-category">${catName}</span></td>
+          <td class="tx-table__td">${dateStr}</td>
+          <td class="tx-table__td tx-table__td--right">
+            <span class="tx-amount ${amountCls}">${sign}${amount}</span>
+          </td>
+        </tr>`;
+    }).join("");
+  }
+
+  // Pagination buttons
+  renderPagination(page, totalPages);
+}
+
+function renderPagination(page, totalPages) {
+  if (!paginationControls) return;
+
+  const buttons = [];
+  buttons.push(`<button class="pagination__btn" ${page <= 1 ? "disabled" : ""} data-page="${page - 1}">Previous</button>`);
+
+  // Show window of pages
+  const start = Math.max(1, page - 2);
+  const end   = Math.min(totalPages, page + 2);
+  for (let p = start; p <= end; p++) {
+    buttons.push(
+      `<button class="pagination__btn ${p === page ? "pagination__btn--active" : ""}" data-page="${p}">${p}</button>`
     );
   }
 
-  return visibleRows.length;
+  buttons.push(`<button class="pagination__btn" ${page >= totalPages ? "disabled" : ""} data-page="${page + 1}">Next</button>`);
+  paginationControls.innerHTML = buttons.join("");
+
+  paginationControls.querySelectorAll(".pagination__btn:not([disabled])").forEach((btn) => {
+    btn.addEventListener("click", () => renderPage(parseInt(btn.dataset.page)));
+  });
 }
 
-// Reset all filters
-function resetFilters() {
-  if (searchInput) searchInput.value = "";
-  if (categoryFilter) categoryFilter.value = "";
-  if (typeFilter) typeFilter.value = "";
-  if (dateFrom) dateFrom.value = "";
-  if (dateTo) dateTo.value = "";
+// ── Filter event listeners ────────────────────────────────────
+[searchInput, categoryFilter, dateFromInput, dateToInput, typeFilter].forEach((el) => {
+  el?.addEventListener("input",  applyFilters);
+  el?.addEventListener("change", applyFilters);
+});
 
-  const visibleCount = filterTransactions();
-  showToast(
-    "Filters Reset",
-    `Showing ${visibleCount} transactions.`,
-    "info",
-    2000,
-  );
-}
+resetBtn?.addEventListener("click", () => {
+  searchInput.value    = "";
+  categoryFilter.value = "";
+  dateFromInput.value  = "";
+  dateToInput.value    = "";
+  typeFilter.value     = "";
+  applyFilters();
+});
 
-// Export to CSV
-function exportToCSV() {
-  const visibleRows = getTransactionRows().filter(
-    (row) => row.style.display !== "none",
-  );
-
-  if (visibleRows.length === 0) {
-    showToast("No Data", "No transactions to export.", "warning");
+// ── Export CSV ────────────────────────────────────────────────
+exportBtn?.addEventListener("click", () => {
+  if (!filtered.length) {
+    toast("No transactions to export.", "error");
     return;
   }
 
-  const headers = ["Transaction", "Category", "Date", "Amount"];
-  const csvData = [headers];
+  const headers = ["Date", "Name", "Category", "Type", "Amount", "Notes"];
+  const rows = filtered.map((tx) => [
+    tx.date || tx.dataOfTransaction || "",
+    `"${(tx.name || "").replace(/"/g, '""')}"`,
+    tx.category_display_name || "",
+    tx.type,
+    tx.amount || "0",
+    `"${(tx.notes || tx.description || "").replace(/"/g, '""')}"`,
+  ]);
 
-  visibleRows.forEach((row) => {
-    const name = row.querySelector(".tx-desc__name")?.textContent || "";
-    const category = row.querySelector(".tx-category")?.textContent || "";
-    const dateCells = row.querySelectorAll(".tx-table__td");
-    const date = dateCells[2]?.textContent || "";
-    const amount = row.querySelector(".tx-amount")?.textContent || "";
-    csvData.push([name, category, date, amount]);
-  });
-
-  const csvContent = csvData.map((row) => row.join(",")).join("\n");
-  const blob = new Blob([csvContent], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `transactions_${new Date().toISOString().split("T")[0]}.csv`;
-  a.click();
+  const csv     = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+  const blob    = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url     = URL.createObjectURL(blob);
+  const link    = document.createElement("a");
+  link.href     = url;
+  link.download = `budgetwise-transactions-${new Date().toISOString().split("T")[0]}.csv`;
+  link.click();
   URL.revokeObjectURL(url);
 
-  showToast(
-    "Export Complete",
-    `${visibleRows.length} transactions exported to CSV.`,
-    "success",
-  );
-}
+  toast("Export downloaded!");
+});
 
-// ================================================
-// UPDATE SUMMARY TOTALS (Static for demo)
-// ================================================
-
-function updateStaticSummary() {
-  // These are the totals from the default 8 transactions
-  const totalIncome = 4250 + 1200; // Tech Corp + Freelance = 5450
-  const totalExpenses = 18.5 + 142 + 9.99 + 15.99 + 89.47 + 10.99; // = 286.94
-  // Wait, the HTML shows $8,540 income and $3,210 expenses - those are demo numbers
-  // Let's keep the HTML values as they are for demo purposes
-}
-
-// ================================================
-// PAGINATION (Demo)
-// ================================================
-
-function setupPagination() {
-  const prevBtn = document.querySelector(".pagination__btn:first-child");
-  const nextBtn = document.querySelector(".pagination__btn:last-child");
-  const pageButtons = document.querySelectorAll(
-    ".pagination__btn:not(:first-child):not(:last-child)",
-  );
-
-  if (prevBtn) {
-    prevBtn.addEventListener("click", () => {
-      showToast("Pagination", "Previous page - This is a demo.", "info", 2000);
-    });
-  }
-
-  if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
-      showToast("Pagination", "Next page - This is a demo.", "info", 2000);
-    });
-  }
-
-  pageButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      pageButtons.forEach((b) => b.classList.remove("pagination__btn--active"));
-      btn.classList.add("pagination__btn--active");
-      showToast(
-        "Pagination",
-        `Page ${btn.textContent} - This is a demo.`,
-        "info",
-        2000,
-      );
-    });
-  });
-}
-
-// ================================================
-// EVENT LISTENERS
-// ================================================
-
-if (searchInput) searchInput.addEventListener("input", filterTransactions);
-if (categoryFilter)
-  categoryFilter.addEventListener("change", filterTransactions);
-if (typeFilter) typeFilter.addEventListener("change", filterTransactions);
-if (dateFrom) dateFrom.addEventListener("change", filterTransactions);
-if (dateTo) dateTo.addEventListener("change", filterTransactions);
-if (resetFiltersBtn) resetFiltersBtn.addEventListener("click", resetFilters);
-if (exportBtn) exportBtn.addEventListener("click", exportToCSV);
-
-// ================================================
-// INITIALIZE PAGE
-// ================================================
-
-function init() {
-  // Initial filter to show all transactions
-  filterTransactions();
-
-  // Setup pagination demo
-  setupPagination();
-
-  // Show welcome toast message
-  setTimeout(() => {
-    showToast(
-      "📜 Transaction History",
-      "Search, filter by category, type, or date range. Date filter only works when BOTH start and end dates are selected!",
-      "info",
-      5000,
-    );
-  }, 500);
-}
-
-// Start the page
-init();
+// ── Init ──────────────────────────────────────────────────────
+loadTransactions();

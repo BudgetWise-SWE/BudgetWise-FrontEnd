@@ -1,233 +1,106 @@
+// ============================================================
+//  BudgetWise — Sign Up Page
+// ============================================================
+import { apiFetch, saveToken, saveUser, getToken } from "./api.js";
 
-const createAccountForm = document.getElementById("create-acc-form")
+if (getToken()) window.location.href = "dashboard.html";
 
+const form           = document.getElementById("create-acc-form");
+const fullnameInput  = document.getElementById("fullname");
+const emailInput     = document.getElementById("email");
+const passwordInput  = document.getElementById("password");
+const confirmInput   = document.getElementById("confirmpass");
+const submitBtn      = document.getElementById("sign-up-button");
 
-function validatePassword(password){
+const fullnameErr    = document.getElementById("fullname-error");
+const emailErr       = document.getElementById("email-error");
+const passwordErr    = document.getElementById("password-error");
+const confirmErr     = document.getElementById("confirmpass-error");
 
-    const passwordInput = document.getElementById("password")
-    const password_error = document.getElementById("password-error");
-
-    let hasUpper = /[A-Z]/.test(password);
-    let hasLower = /[a-z]/.test(password);
-    let hasNum = /[0-9]/.test(password);
-    let hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-    if(password === ""){
-
-        passwordInput.classList.remove("input-ok");
-        passwordInput.classList.add("input-error");
-
-        console.log(password_error)
-        password_error.textContent ="Please enter a valid Password"
-        password_error.style.visibility = "visible"
-        return false
-
-    }else if(password.length < 8){
-
-        passwordInput.classList.remove("input-ok");
-        passwordInput.classList.add("input-error");
-
-        password_error.textContent ="Password must be at least 8 characters"
-        password_error.style.visibility = "visible"
-        return false
-
-    }else if(!hasUpper || !hasLower || !hasNum ||!hasSpecial){
-
-        passwordInput.classList.remove("input-ok");
-        passwordInput.classList.add("input-error");
-
-        password_error.textContent ="Password must contain '123$%^UPae' "
-        password_error.style.visibility = "visible"
-        return false
-
-    }
-    else{
-        passwordInput.classList.remove("input-error");
-        passwordInput.classList.add("input-ok");
-        
-        password_error.style.visibility= "hidden"
-        return true
-    }
+function clearErrors() {
+  [fullnameErr, emailErr, passwordErr, confirmErr].forEach((el) => {
+    el.style.display = "none";
+  });
+  [fullnameInput, emailInput, passwordInput, confirmInput].forEach((el) => {
+    el.classList.remove("input--error");
+  });
 }
 
-
-function ValidateFullName(username){
-
-    let full_name_regex = /^[A-Za-z]+(?:\s[A-Za-z]+)+$/
-    
-
-    const fullName = document.getElementById("fullname")
-    const fullNameError = document.getElementById("fullname-error")
-
-    let is_full_name_validation = full_name_regex.test(username)
-
-
-    if(username===""){
-
-        fullName.classList.remove("input-ok");
-        fullName.classList.add("input-error");
-
-        fullNameError.textContent ="Please enter your full name"
-        fullNameError.style.visibility = "visible"
-        return false
-
-    }else if(username.length > 50){
-
-        fullName.classList.remove("input-ok");
-        fullName.classList.add("input-error");
-
-        fullNameError.textContent ="Full name must be less than 50 char"
-        fullNameError.style.visibility = "visible"
-        return false
-
-    }else if(!is_full_name_validation) {
-
-        fullName.classList.remove("input-ok");
-        fullName.classList.add("input-error");
-
-        fullNameError.textContent ="Please enter a valid full name"
-        fullNameError.style.visibility = "visible"
-        return false
-    }
-
-    fullName.classList.remove("input-error");
-    fullName.classList.add("input-ok");
-        
-    fullNameError.style.visibility = "hidden"
-    return true
-
-
+function showError(errEl, inputEl, msg) {
+  errEl.textContent   = msg;
+  errEl.style.display = "block";
+  inputEl.classList.add("input--error");
 }
 
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  clearErrors();
 
-function validateMail(email){
+  const fullname        = fullnameInput.value.trim();
+  const email           = emailInput.value.trim();
+  const password        = passwordInput.value;
+  const confirmPassword = confirmInput.value;
 
-    const emailInput = document.getElementById("email")
-    const email_error = document.getElementById("email-error")
+  let valid = true;
 
-    const regEx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!fullname || fullname.length < 2) {
+    showError(fullnameErr, fullnameInput, "Please enter your full name.");
+    valid = false;
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showError(emailErr, emailInput, "Please enter a valid email address.");
+    valid = false;
+  }
+  if (!password || password.length < 8) {
+    showError(passwordErr, passwordInput, "Password must be at least 8 characters.");
+    valid = false;
+  }
+  if (password !== confirmPassword) {
+    showError(confirmErr, confirmInput, "Passwords do not match.");
+    valid = false;
+  }
+  if (!valid) return;
 
-    if(email === ""){
-        emailInput.classList.remove("input-ok");
-        emailInput.classList.add("input-error");
+  // Split full name into first / last
+  const parts     = fullname.split(" ");
+  const first_name = parts[0];
+  const last_name  = parts.slice(1).join(" ") || parts[0];
 
-        email_error.textContent ="Please enter a your email"
-        email_error.style.visibility = "visible"
-        return false
+  submitBtn.disabled    = true;
+  submitBtn.textContent = "Creating account…";
+
+  try {
+    const data = await apiFetch("/api/auth/", {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+        first_name,
+        last_name,
+        fullname,
+        password,
+      }),
+    });
+
+    saveToken(data.token);
+    saveUser(data.user);
+    window.location.href = "dashboard.html";
+  } catch (err) {
+    submitBtn.disabled    = false;
+    submitBtn.textContent = "Create Free Account";
+
+    if (err?.email)    showError(emailErr,    emailInput,    err.email[0]);
+    if (err?.password) showError(passwordErr, passwordInput, err.password[0]);
+    if (err?.fullname || err?.first_name)
+      showError(fullnameErr, fullnameInput, (err.fullname || err.first_name)[0]);
+
+    if (!err?.email && !err?.password && !err?.fullname && !err?.first_name) {
+      showError(
+        emailErr,
+        emailInput,
+        err?.non_field_errors?.[0] ||
+          err?.detail ||
+          "Registration failed. Please try again."
+      );
     }
-    else if(!regEx.test(email)){
-        emailInput.classList.remove("input-ok");
-        emailInput.classList.add("input-error");
-
-        email_error.textContent ="Please enter a correct email"
-        email_error.style.visibility = "visible"
-        console.log("Email is good send it")
-        return false
-    }
-
-    emailInput.classList.remove("input-error");
-    email_error.style.visibility = "hidden"
-
-    return true
-
-}
-
-
-function validateConfirmPassword(confirmpass,password){
-
-    const confirmpassInput = document.getElementById("confirmpass")
-    const confirmpassError = document.getElementById("confirmpass-error");
-
-    let hasUpper = /[A-Z]/.test(password);
-    let hasLower = /[a-z]/.test(password);
-    let hasNum = /[0-9]/.test(password);
-    let hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-
-    
-    if(confirmpass === ""){
-
-        confirmpassInput.classList.remove("input-ok");
-        confirmpassInput.classList.add("input-error");
-
-        confirmpassError.textContent ="Please confirm your Password"
-        confirmpassError.style.visibility = "visible"
-        return false}
-
-    else if(confirmpass !== password){
-        confirmpassInput.classList.remove("input-ok");
-        confirmpassInput.classList.add("input-error");
-
-        confirmpassError.textContent ="does not match your password"
-        confirmpassError.style.visibility = "visible"
-        return false
-    
-    }else if(confirmpass.length < 8){
-
-        confirmpassInput.classList.remove("input-ok");
-        confirmpassInput.classList.add("input-error");
-
-        confirmpassError.textContent ="Password must be at least 8 characters"
-        confirmpassError.style.visibility = "visible"
-        return false
-
-    }else if(!hasUpper || !hasLower || !hasNum ||!hasSpecial){
-
-        confirmpassInput.classList.remove("input-ok");
-        confirmpassInput.classList.add("input-error");
-
-        confirmpassError.textContent ="Password must contain somthing like '123$%^UPae' "
-        confirmpassError.style.visibility = "visible"
-        return false
-
-    }
-    else{
-        confirmpassInput.classList.remove("input-error");
-        confirmpassInput.classList.add("input-ok");
-        
-        confirmpassError.style.visibility= "hidden"
-        return true
-    }
-}
-
-function simpleHash(str) {
-    return btoa(str); // base64 encoding (NOT real hashing, just learning)
-}
-
-
-
-
-const users = JSON.parse(localStorage.getItem("users")) || []
-
-
-
-createAccountForm.addEventListener('submit',(e) => {
-    
-    e.preventDefault()
-    const confirmPassword = document.getElementById("confirmpass").value.trim();
-    const password = document.getElementById("password").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const fullName = document.getElementById("fullname").value.trim();
-
-    
-
-    let is_password_Ok = validatePassword(password);
-    let is_full_name_ok = ValidateFullName(fullName);
-    let is_email_ok = validateMail(email);
-    let is_confirm_pass_ok = validateConfirmPassword(confirmPassword,password)
-
-    if(is_full_name_ok && is_password_Ok && is_email_ok &&is_confirm_pass_ok ){
-        const user ={
-            fullname:fullName,
-            email:email,
-            password: simpleHash(password) // "hashed",
-        }
-
-        users.push(user)
-        window.localStorage.setItem("users",JSON.stringify(users))
-        console.log("information is added")
-        
-    }
-    
-
+  }
 });

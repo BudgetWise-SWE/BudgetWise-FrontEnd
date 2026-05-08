@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="../CSS/global.css" />
 </head>
 <body>
+  <script type="module" src="../JS/transaction.js"></script>
 
   <!-- ================================================
        TOP NAVIGATION
@@ -86,9 +87,9 @@
         <div class="balance-banner__body">
           <p class="balance-banner__label">Total Balance</p>
           <h3 id =total_balance class="balance-banner__amount">$0</h3>
-          <div class="balance-banner__trend">
+          <div class="balance-banner__trend" style="display: none;">
             <span class="material-symbols-outlined balance-banner__trend-icon">trending_up</span>
-            <span>+12.5% from last month</span>
+            <span>0% from last month</span>
           </div>
         </div>
       </div>
@@ -335,6 +336,5 @@
   <button class="fab" aria-label="Add transaction">
     <span class="material-symbols-outlined fab__icon">add</span>
   </button>
-<script type="module" src="../JS/transaction.js"></script>
 </body>
 </html>
