@@ -46,8 +46,14 @@ export async function apiFetch(path, options = {}) {
   // 204 No Content
   if (res.status === 204) return null;
 
-  const data = await res.json().catch(() => null);
-  if (!res.ok) throw data;
+  const text = await res.text().catch(() => "");
+  let data;
+  try { data = JSON.parse(text); } catch { data = null; }
+
+  if (!res.ok) {
+    const err = data || { detail: `HTTP ${res.status}: ${text.slice(0, 200) || "Unknown server error"}` };
+    throw err;
+  }
   return data;
 }
 

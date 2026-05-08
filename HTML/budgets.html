@@ -158,6 +158,26 @@
           </button>
         </div>
 
+        <!-- Loading Skeleton -->
+        <div class="budgets-loading" id="budgetsLoading" style="display:none">
+          <div class="skeleton-card"><div class="skeleton-line skeleton-line--h4"></div><div class="skeleton-line skeleton-line--p"></div><div class="skeleton-bar"></div><div class="skeleton-line skeleton-line--short"></div></div>
+          <div class="skeleton-card"><div class="skeleton-line skeleton-line--h4"></div><div class="skeleton-line skeleton-line--p"></div><div class="skeleton-bar"></div><div class="skeleton-line skeleton-line--short"></div></div>
+          <div class="skeleton-card"><div class="skeleton-line skeleton-line--h4"></div><div class="skeleton-line skeleton-line--p"></div><div class="skeleton-bar"></div><div class="skeleton-line skeleton-line--short"></div></div>
+          <div class="skeleton-card"><div class="skeleton-line skeleton-line--h4"></div><div class="skeleton-line skeleton-line--p"></div><div class="skeleton-bar"></div><div class="skeleton-line skeleton-line--short"></div></div>
+          <div class="skeleton-card"><div class="skeleton-line skeleton-line--h4"></div><div class="skeleton-line skeleton-line--p"></div><div class="skeleton-bar"></div><div class="skeleton-line skeleton-line--short"></div></div>
+          <div class="skeleton-card"><div class="skeleton-line skeleton-line--h4"></div><div class="skeleton-line skeleton-line--p"></div><div class="skeleton-bar"></div><div class="skeleton-line skeleton-line--short"></div></div>
+        </div>
+
+        <!-- Error State -->
+        <div class="budgets-error" id="budgetsError" style="display:none">
+          <span class="material-symbols-outlined budgets-error__icon">error_outline</span>
+          <h3>Something went wrong</h3>
+          <p class="error-message-text">Failed to load budget data.</p>
+          <button class="btn btn--primary" id="retryBtn">
+            <span class="material-symbols-outlined">refresh</span> Retry
+          </button>
+        </div>
+
         <!-- Budgets List Container -->
         <div class="budgets-container" id="budgetsContainer"></div>
       </div>

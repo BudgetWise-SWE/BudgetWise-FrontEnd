@@ -192,27 +192,43 @@
   color: #059669;
 }
 
-.budget-card__info {
-  flex: 1;
-}
-
 .budget-card__name {
   font-size: var(--font-size-lg);
   font-weight: 700;
   margin-bottom: 4px;
 }
 
-.budget-card__period {
-  font-size: var(--font-size-xs);
+.budget-card__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.budget-card--empty {
+  border: 2px dashed var(--color-border);
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.budget-card__no-budget {
+  font-size: var(--font-size-sm);
   color: var(--color-muted);
+  margin-bottom: var(--space-2);
 }
 
-/* Progress Bar */
-.budget-card__progress {
-  margin-bottom: var(--space-6);
+.budget-card__amounts {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-3);
+  color: var(--color-on-surface);
 }
 
-.progress-bar {
+.budget-progress-track {
   height: 8px;
   background: var(--color-border);
   border-radius: var(--radius-full);
@@ -220,37 +236,10 @@
   margin-bottom: var(--space-3);
 }
 
-.progress-fill {
+.budget-progress-fill {
   height: 100%;
   border-radius: var(--radius-full);
   transition: width 0.3s ease;
-}
-
-.progress-fill--good {
-  background: #10b981;
-}
-
-.progress-fill--warning {
-  background: #f59e0b;
-}
-
-.progress-fill--danger {
-  background: #ef4444;
-}
-
-.progress-stats {
-  display: flex;
-  justify-content: space-between;
-  font-size: var(--font-size-sm);
-}
-
-.spent {
-  font-weight: 600;
-  color: var(--color-on-surface);
-}
-
-.limit {
-  color: var(--color-muted);
 }
 
 /* Budget Card Footer */
@@ -307,9 +296,19 @@
   border-radius: var(--radius-sm);
 }
 
+.budget-status--over {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
 .budget-status--warning {
   background: rgba(245, 158, 11, 0.1);
   color: #d97706;
+}
+
+.budget-status--ok {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
 }
 
 .budget-status--danger {
@@ -544,6 +543,106 @@
 .delete-category-btn:hover {
   background: var(--color-bg);
   color: #dc2626;
+}
+
+/* Icon Button (used in budget card actions) */
+.icon-btn {
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--color-muted);
+  cursor: pointer;
+  background: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+}
+.icon-btn:hover {
+  background: var(--color-bg);
+  color: var(--color-primary);
+}
+
+/* Loading Skeleton */
+.budgets-loading {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: var(--space-6);
+}
+
+.skeleton-card {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
+}
+
+.skeleton-line {
+  height: 16px;
+  background: linear-gradient(90deg, var(--color-bg) 25%, #e8ecf0 50%, var(--color-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+}
+
+.skeleton-line--h4 {
+  width: 60%;
+  height: 20px;
+}
+
+.skeleton-line--p {
+  width: 40%;
+  height: 14px;
+}
+
+.skeleton-line--short {
+  width: 30%;
+  height: 14px;
+}
+
+.skeleton-bar {
+  height: 8px;
+  background: linear-gradient(90deg, var(--color-bg) 25%, #e8ecf0 50%, var(--color-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-4);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Error State */
+.budgets-error {
+  text-align: center;
+  padding: var(--space-16) var(--space-8);
+  background: var(--color-white);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.budgets-error__icon {
+  font-size: 56px;
+  color: var(--color-error, #ef4444);
+  margin-bottom: var(--space-4);
+}
+
+.budgets-error h3 {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+  color: var(--color-on-surface);
+}
+
+.budgets-error p {
+  font-size: var(--font-size-base);
+  color: var(--color-muted);
+  margin-bottom: var(--space-6);
 }
 
 /* Empty State for Custom Categories */
