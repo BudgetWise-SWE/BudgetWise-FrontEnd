@@ -29,17 +29,32 @@ let currentPage     = 1;
 // ── Prefill today's date ──────────────────────────────────────
 dateInput.value = new Date().toISOString().split("T")[0];
 
-// ── Category options by type ──────────────────────────────────
-const EXPENSE_CATS = ["Dining & Drinks", "Shopping", "Transportation", "Entertainment", "Utilities", "Health"];
-const INCOME_CATS  = ["Salary", "Freelance", "Investments", "Business", "Other Income"];
+// ── Categories from API ───────────────────────────────────────
+let allCategories = [];
+
+async function loadCategories() {
+  try {
+    const data = await apiFetch("/api/finance/categories/");
+    allCategories = Array.isArray(data) ? data : [];
+  } catch (_) {}
+  updateCategoryOptions(getSelectedType());
+}
+
+function getSelectedType() {
+  return (typeSelect.value || "expense").toLowerCase();
+}
 
 function updateCategoryOptions(type) {
-  const cats = type === "income" ? INCOME_CATS : EXPENSE_CATS;
-  categorySelect.innerHTML = cats.map((c) => `<option>${c}</option>`).join("");
+  const cats = allCategories.filter((c) => (c.type || "").toLowerCase() === type);
+  if (!cats.length) {
+    categorySelect.innerHTML = `<option>${type === "income" ? "Income" : "Other"}</option>`;
+    return;
+  }
+  categorySelect.innerHTML = cats.map((c) => `<option>${c.name}</option>`).join("");
 }
 
 typeSelect.addEventListener("change", () => {
-  updateCategoryOptions(typeSelect.value.toLowerCase());
+  updateCategoryOptions(getSelectedType());
 });
 
 // ── Load total balance from dashboard summary ─────────────────
@@ -188,5 +203,6 @@ form.addEventListener("submit", async (e) => {
 
 // ── Init ──────────────────────────────────────────────────────
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
+loadCategories();
 loadBalance();
 loadTransactions();
