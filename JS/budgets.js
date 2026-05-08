@@ -170,6 +170,20 @@ function hideError() {
 }
 
 /**
+ * Normalize a limit object — extract plain budget ID and category name
+ * from nested object responses that DRF may return.
+ * @param {Object} l - Raw limit from API.
+ * @returns {Object} Normalized limit with flat `budget` (number) and `category` (string).
+ */
+function normalizeLimit(l) {
+  return {
+    ...l,
+    budget:   l.budget?.id   ?? l.budget,
+    category: l.category?.name ?? l.category,
+  };
+}
+
+/**
  * Fetch budgets, category limits, and categories in parallel, then render.
  * @returns {Promise<void>}
  */
@@ -184,7 +198,7 @@ async function loadAll() {
     ]);
 
     budgets        = Array.isArray(budgetData) ? budgetData : [];
-    categoryLimits = Array.isArray(limitData)  ? limitData  : [];
+    categoryLimits = Array.isArray(limitData)  ? limitData.map(normalizeLimit) : [];
     categories     = Array.isArray(catData)    ? catData    : [];
 
     renderSummaryCards();
@@ -343,7 +357,6 @@ function buildBudgetCard(cat, limit, monthBudget) {
         <h4 class="budget-card__name">${catName} ${typeBadge}</h4>
         <div class="budget-card__actions">
           ${statusBadge}
-          ${editDeleteBtns}
           <button class="icon-btn set-budget-btn"
             data-cat-name="${catName}"
             data-cat-id="${catId}"
@@ -487,7 +500,13 @@ budgetForm.addEventListener("submit", async (e) => {
       return;
     }
 
-    const newLimit = await apiFetch("/api/finance/budget-category-limits/", {
+    if (categoryLimits.some((l) => l.budget === budget.id && l.category.toLowerCase() === catName.toLowerCase())) {
+      toast(`Budget for "${catName}" already exists this month.`, "error");
+      disableBtn(submitBtn, false);
+      return;
+    }
+
+    let newLimit = await apiFetch("/api/finance/budget-category-limits/", {
       method: "POST",
       body: JSON.stringify({
         budget: budget.id,
@@ -496,6 +515,7 @@ budgetForm.addEventListener("submit", async (e) => {
         month: monthVal,
       }),
     });
+    newLimit = normalizeLimit(newLimit);
 
     const existingIdx = categoryLimits.findIndex((l) => l.id === newLimit.id);
     if (existingIdx !== -1) {
@@ -555,10 +575,10 @@ setBudgetForm.addEventListener("submit", async (e) => {
 
   try {
     if (limitId) {
-      const updated = await apiFetch(`/api/finance/budget-category-limits/${limitId}/`, {
+      const updated = normalizeLimit(await apiFetch(`/api/finance/budget-category-limits/${limitId}/`, {
         method: "PATCH",
         body: JSON.stringify({ limit: newLimit.toString() }),
-      });
+      }));
       const idx = categoryLimits.findIndex((l) => l.id === parseInt(limitId));
       if (idx !== -1) categoryLimits[idx] = updated;
     } else {
@@ -578,7 +598,14 @@ setBudgetForm.addEventListener("submit", async (e) => {
         disableBtn(submitBtn, false);
         return;
       }
-      const created = await apiFetch("/api/finance/budget-category-limits/", {
+
+      if (categoryLimits.some((l) => l.budget === budget.id && l.category.toLowerCase() === catName.toLowerCase())) {
+        toast(`Budget for "${catName}" already exists this month.`, "error");
+        disableBtn(submitBtn, false);
+        return;
+      }
+
+      const created = normalizeLimit(await apiFetch("/api/finance/budget-category-limits/", {
         method: "POST",
         body: JSON.stringify({
           budget: budget.id,
@@ -586,7 +613,7 @@ setBudgetForm.addEventListener("submit", async (e) => {
           limit: newLimit.toString(),
           month: `${getYearNum()}-${String(getMonthNum()).padStart(2,"0")}`,
         }),
-      });
+      }));
       const existingIdx = categoryLimits.findIndex((l) => l.id === created.id);
       if (existingIdx !== -1) {
         categoryLimits[existingIdx] = created;
@@ -636,6 +663,11 @@ customCatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = customCatNameInput.value.trim();
   if (!name) { toast("Please enter a category name.", "error"); return; }
+
+  if (categories.some((c) => c.name.toLowerCase() === name.toLowerCase())) {
+    toast(`Category "${name}" already exists.`, "error");
+    return;
+  }
 
   const submitBtn = customCatForm.querySelector('button[type="submit"]');
   disableBtn(submitBtn, true);

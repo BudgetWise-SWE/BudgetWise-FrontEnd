@@ -388,6 +388,10 @@ a      { text-decoration: none; color: inherit; }
 .metric-card__bar--100 { width: 100%; }
 
 /* Dot indicators (balance card) */
+.metric-card__value--negative {
+  color: #ffcccc;
+}
+
 .metric-card__dots {
   display:  flex;
   gap:      var(--space-2);
