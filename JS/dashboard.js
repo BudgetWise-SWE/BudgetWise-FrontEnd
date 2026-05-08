@@ -1,25 +1,64 @@
-// ============================================================
-//  BudgetWise — Dashboard
-// ============================================================
+/**
+ * @file BudgetWise — Dashboard page.
+ * Displays a financial summary (income, expenses, balance) and
+ * a list of recent transactions for the authenticated user.
+ * @module dashboard
+ */
+
 import { requireAuth, apiFetch, fmt, fmtDate, getUser, getCategoryMeta, logout } from "./api.js";
 
 requireAuth();
 
-// ── DOM refs ─────────────────────────────────────────────────
+/** @type {HTMLElement} */
 const totalIncomeEl  = document.getElementById("total-income");
+/** @type {HTMLElement} */
 const totalExpenseEl = document.getElementById("total-expenses");
+/** @type {HTMLElement} */
 const remainingEl    = document.getElementById("remaining");
+/** @type {HTMLElement} */
 const numTransEl     = document.getElementById("num-of-trans");
+/** @type {HTMLTableSectionElement} */
 const tbody          = document.querySelector(".tx-table tbody");
+/** @type {HTMLElement} */
 const welcomeSubEl   = document.querySelector(".welcome__subtitle");
 
-// ── Greet user ───────────────────────────────────────────────
+/** Greet the user by name in the welcome subtitle. */
 const user = getUser();
 if (welcomeSubEl && user) {
   welcomeSubEl.textContent = `Welcome back, ${user.first_name || user.full_name || "there"}. Your finances are looking great.`;
 }
 
-// ── Load dashboard summary ────────────────────────────────────
+/**
+ * An object representing a summary of the user's finances.
+ * @typedef {Object} DashboardSummary
+ * @property {number|string} total_income
+ * @property {number|string} total_expenses
+ * @property {number|string} remaining
+ * @property {number|string} num_of_trans
+ * @property {number|string} total_transactions
+ * @property {Array<Transaction>} recent_transactions
+ */
+
+/**
+ * An object representing a single financial transaction.
+ * @typedef {Object} Transaction
+ * @property {number} id
+ * @property {"income"|"expense"} type
+ * @property {string} name
+ * @property {number|string} amount
+ * @property {number|string} amountOfMoney
+ * @property {string} category_display_name
+ * @property {string} [category_name]
+ * @property {string} date
+ * @property {string} dataOfTransaction
+ * @property {string} [notes]
+ * @property {string} [description]
+ */
+
+/**
+ * Fetch the dashboard summary from the analytics API and update the UI.
+ * @returns {Promise<void>}
+ */
 async function loadDashboard() {
   try {
     const data = await apiFetch("/api/analytics/dashboard-summary/");
@@ -30,7 +69,6 @@ async function loadDashboard() {
     remainingEl.textContent    = fmt(parseFloat(data.remaining || 0));
     numTransEl.textContent     = data.num_of_trans || data.total_transactions || "0";
 
-    // Colour remaining balance red if negative
     if (parseFloat(data.remaining) < 0) {
       remainingEl.style.color = "var(--color-danger, #ef4444)";
     }
@@ -41,7 +79,10 @@ async function loadDashboard() {
   }
 }
 
-// ── Render recent transactions table ─────────────────────────
+/**
+ * Render the 5 most recent transactions into the dashboard table.
+ * @param {Array<Transaction>} transactions - Array of transaction objects.
+ */
 function renderRecentTransactions(transactions) {
   if (!tbody) return;
 

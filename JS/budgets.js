@@ -1,70 +1,131 @@
+/**
+ * @file BudgetWise — Budgets page.
+ * Manages monthly budget categories, spending limits, custom categories,
+ * and includes full CRUD modals for budgets and categories.
+ * @module budgets
+ */
+
 import { requireAuth, apiFetch, fmt, toast, logout } from "./api.js";
 
 requireAuth();
 
+/** @type {Array<Object>} */
 let budgets         = [];
+/** @type {Array<Object>} */
 let categoryLimits  = [];
+/** @type {Array<Object>} */
 let categories      = [];
-let customCategories = [];
 
+/** @type {Date} */
 let displayDate     = new Date();
+/** @type {number|null} */
 let pendingDeleteId = null;
+/** @type {string|null} */
 let pendingDeleteType = null;
+/** @type {number|null} */
 let editingCategoryId = null;
+/** @type {boolean} */
 let isLoading       = false;
 
+/** @type {HTMLElement} */
 const totalBudgetEl     = document.getElementById("totalBudget");
+/** @type {HTMLElement} */
 const totalSpentEl      = document.getElementById("totalSpent");
+/** @type {HTMLElement} */
 const totalRemainingEl  = document.getElementById("totalRemaining");
+/** @type {HTMLElement} */
 const budgetsContainer  = document.getElementById("budgetsContainer");
+/** @type {HTMLElement} */
 const currentMonthEl    = document.getElementById("currentMonth");
+/** @type {HTMLButtonElement} */
 const prevMonthBtn      = document.getElementById("prevMonthBtn");
+/** @type {HTMLButtonElement} */
 const nextMonthBtn      = document.getElementById("nextMonthBtn");
+/** @type {HTMLButtonElement} */
 const createBudgetBtn   = document.getElementById("createBudgetBtn");
+/** @type {HTMLElement} */
 const loadingEl         = document.getElementById("budgetsLoading");
+/** @type {HTMLElement} */
 const errorEl           = document.getElementById("budgetsError");
+/** @type {HTMLButtonElement} */
 const retryBtn          = document.getElementById("retryBtn");
 
+/** @type {HTMLElement} */
 const createBudgetModal = document.getElementById("createBudgetModal");
+/** @type {HTMLFormElement} */
 const budgetForm        = document.getElementById("budgetForm");
+/** @type {HTMLSelectElement} */
 const categorySelect    = document.getElementById("categorySelect");
+/** @type {HTMLInputElement} */
 const budgetLimitInput  = document.getElementById("budgetLimit");
+/** @type {HTMLInputElement} */
 const budgetMonthInput  = document.getElementById("budgetMonth");
 
+/** @type {HTMLElement} */
 const addCustomCatModal = document.getElementById("addCustomCategoryModal");
+/** @type {HTMLFormElement} */
 const customCatForm     = document.getElementById("customCategoryForm");
+/** @type {HTMLInputElement} */
 const customCatNameInput= document.getElementById("customCategoryName");
 
+/** @type {HTMLElement} */
 const setBudgetModal    = document.getElementById("setBudgetModal");
+/** @type {HTMLFormElement} */
 const setBudgetForm     = document.getElementById("setBudgetForm");
+/** @type {HTMLElement} */
 const setBudgetTitle    = document.getElementById("setBudgetTitle");
+/** @type {HTMLInputElement} */
 const setBudgetCatInput = document.getElementById("setBudgetCategory");
+/** @type {HTMLInputElement} */
 const setBudgetLimitInput = document.getElementById("setBudgetLimit");
 
+/** @type {HTMLElement} */
 const editCatModal      = document.getElementById("editCategoryModal");
+/** @type {HTMLFormElement} */
 const editCatForm       = document.getElementById("editCategoryForm");
+/** @type {HTMLInputElement} */
 const editCatNameInput  = document.getElementById("editCategoryNameInput");
 
+/** @type {HTMLElement} */
 const deleteModal       = document.getElementById("deleteConfirmModal");
+/** @type {HTMLElement} */
 const deleteMsg         = document.getElementById("deleteMessage");
+/** @type {HTMLButtonElement} */
 const deleteConfirmBtn  = document.getElementById("deleteConfirmBtn");
 
+/** @type {HTMLElement} */
 const deleteCatModal    = document.getElementById("deleteCategoryConfirmModal");
+/** @type {HTMLButtonElement} */
 const deleteCatConfirmBtn = document.getElementById("deleteCategoryConfirmBtn");
 
+/** @type {string[]} */
 const MONTHS = ["January","February","March","April","May","June",
                 "July","August","September","October","November","December"];
 
+/**
+ * Format the current display month as a label string.
+ * @returns {string} e.g. "May 2026"
+ */
 function getMonthLabel() {
   return `${MONTHS[displayDate.getMonth()]} ${displayDate.getFullYear()}`;
 }
+
+/** @returns {number} Numeric month (1-12). */
 function getMonthNum()  { return displayDate.getMonth() + 1; }
+
+/** @returns {number} Full year. */
 function getYearNum()   { return displayDate.getFullYear(); }
 
+/** Update the month label in the UI. */
 function updateMonthDisplay() {
   currentMonthEl.textContent = getMonthLabel();
 }
 
+/**
+ * Extract a human-readable error message from various API error shapes.
+ * @param {*} err - The thrown error (object, string, or undefined).
+ * @returns {string} A readable error message.
+ */
 function extractError(err) {
   if (!err) return "An unexpected error occurred.";
   if (typeof err === "string") return err;
@@ -76,6 +137,10 @@ function extractError(err) {
   return "An unexpected error occurred.";
 }
 
+/**
+ * Toggle the loading state of the budgets page.
+ * @param {boolean} loading - Whether to show the loading indicator.
+ */
 function setLoading(loading) {
   isLoading = loading;
   if (loading) {
@@ -88,6 +153,10 @@ function setLoading(loading) {
   }
 }
 
+/**
+ * Display an error message in the error placeholder.
+ * @param {string} msg - The error message to display.
+ */
 function showError(msg) {
   errorEl.querySelector(".error-message-text").textContent = msg;
   errorEl.style.display = "block";
@@ -95,10 +164,15 @@ function showError(msg) {
   budgetsContainer.style.display = "none";
 }
 
+/** Hide the error placeholder. */
 function hideError() {
   errorEl.style.display = "none";
 }
 
+/**
+ * Fetch budgets, category limits, and categories in parallel, then render.
+ * @returns {Promise<void>}
+ */
 async function loadAll() {
   setLoading(true);
   hideError();
@@ -112,8 +186,6 @@ async function loadAll() {
     budgets        = Array.isArray(budgetData) ? budgetData : [];
     categoryLimits = Array.isArray(limitData)  ? limitData  : [];
     categories     = Array.isArray(catData)    ? catData    : [];
-
-    customCategories = categories.filter((c) => !c.is_predefined);
 
     renderSummaryCards();
     renderBudgets();
@@ -129,6 +201,9 @@ async function loadAll() {
 
 retryBtn.addEventListener("click", loadAll);
 
+/**
+ * Calculate and render the summary cards (total budget, total spent, remaining).
+ */
 function renderSummaryCards() {
   const monthLimits = categoryLimits.filter((l) => {
     const budget = budgets.find((b) => b.id === l.budget);
@@ -147,6 +222,11 @@ function renderSummaryCards() {
     : "inherit";
 }
 
+/**
+ * Look up the category ID from the categories array by name.
+ * @param {string} catName - The category display name.
+ * @returns {number|null} The category ID, or null if not found.
+ */
 function getCategoryId(catName) {
   const found = categories.find(
     (c) => c.name.toLowerCase() === catName.toLowerCase()
@@ -154,6 +234,7 @@ function getCategoryId(catName) {
   return found ? found.id : null;
 }
 
+/** Build and render all budget cards into the container. */
 function renderBudgets() {
   const monthBudget = budgets.find(
     (b) => b.month === getMonthNum() && b.year === getYearNum()
@@ -193,6 +274,13 @@ function renderBudgets() {
   attachCardListeners();
 }
 
+/**
+ * Build the HTML for a single budget category card.
+ * @param {Object} cat - The category object.
+ * @param {Object|null} limit - The category limit object (or null).
+ * @param {Object|null} monthBudget - The monthly budget object (or null).
+ * @returns {string} The card HTML string.
+ */
 function buildBudgetCard(cat, limit, monthBudget) {
   const catName   = cat.name;
   const isCustom  = !cat.is_predefined;
@@ -289,6 +377,7 @@ function buildBudgetCard(cat, limit, monthBudget) {
     </div>`;
 }
 
+/** Attach click listeners to dynamically rendered budget card buttons. */
 function attachCardListeners() {
   document.querySelectorAll(".set-budget-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -323,12 +412,18 @@ function attachCardListeners() {
   });
 }
 
+/** Populate the budget creation form's category dropdown. */
 function populateCategoryDropdown() {
   categorySelect.innerHTML = categories
     .map((c) => `<option value="${c.name}">${c.name}</option>`)
     .join("");
 }
 
+/**
+ * Enable or disable a button.
+ * @param {HTMLButtonElement} btn - The button element.
+ * @param {boolean} [disabled=true] - Whether to disable it.
+ */
 function disableBtn(btn, disabled = true) {
   if (!btn) return;
   btn.disabled = disabled;
@@ -354,6 +449,12 @@ createBudgetBtn.addEventListener("click", () => {
   openModal(createBudgetModal);
 });
 
+/**
+ * Handle the create-budget form submission.
+ * Creates a new budget (if needed) and a category limit.
+ * @param {SubmitEvent} e - The form submit event.
+ * @returns {Promise<void>}
+ */
 budgetForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const catName  = categorySelect.value;
@@ -415,8 +516,16 @@ budgetForm.addEventListener("submit", async (e) => {
   }
 });
 
+/**
+ * Open the set/edit budget modal pre-populated with category data.
+ * @param {string} catName - Category display name.
+ * @param {string} catId - Category ID.
+ * @param {string} limitId - Existing limit ID (empty string for new).
+ * @param {string} budgetId - Budget ID.
+ * @param {string} currentLimit - Current limit amount.
+ */
 function openSetBudgetModal(catName, catId, limitId, budgetId, currentLimit) {
-  setBudgetTitle.textContent  = limitId ? `Edit Budget — ${catName}` : `Set Budget — ${catName}`;
+  setBudgetTitle.textContent  = limitId ? `Edit Budget \u2014 ${catName}` : `Set Budget \u2014 ${catName}`;
   setBudgetCatInput.value     = catName;
   setBudgetLimitInput.value   = currentLimit || "";
   setBudgetForm.dataset.catName  = catName;
@@ -426,6 +535,12 @@ function openSetBudgetModal(catName, catId, limitId, budgetId, currentLimit) {
   openModal(setBudgetModal);
 }
 
+/**
+ * Handle the set/edit budget form submission.
+ * Creates a new limit or updates an existing one via PATCH.
+ * @param {SubmitEvent} e - The form submit event.
+ * @returns {Promise<void>}
+ */
 setBudgetForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const { catName, catId, limitId, budgetId } = setBudgetForm.dataset;
@@ -490,6 +605,7 @@ setBudgetForm.addEventListener("submit", async (e) => {
   }
 });
 
+/** Confirm deletion of a budget category limit. */
 deleteConfirmBtn.addEventListener("click", async () => {
   if (!pendingDeleteId) return;
   disableBtn(deleteConfirmBtn, true);
@@ -508,8 +624,14 @@ deleteConfirmBtn.addEventListener("click", async () => {
   }
 });
 
+/** Open the add-custom-category modal. */
 function openAddCustomCatModal() { openModal(addCustomCatModal); }
 
+/**
+ * Handle the custom category form submission.
+ * @param {SubmitEvent} e - The form submit event.
+ * @returns {Promise<void>}
+ */
 customCatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = customCatNameInput.value.trim();
@@ -524,7 +646,6 @@ customCatForm.addEventListener("submit", async (e) => {
       body: JSON.stringify({ name, type: document.getElementById("customCategoryType").value }),
     });
     categories.push(cat);
-    customCategories.push(cat);
     toast(`Category "${name}" added!`);
     closeModal(addCustomCatModal);
     customCatForm.reset();
@@ -536,6 +657,11 @@ customCatForm.addEventListener("submit", async (e) => {
   }
 });
 
+/**
+ * Handle the edit-category form submission.
+ * @param {SubmitEvent} e - The form submit event.
+ * @returns {Promise<void>}
+ */
 editCatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = editCatNameInput.value.trim();
@@ -549,10 +675,8 @@ editCatForm.addEventListener("submit", async (e) => {
       method: "PATCH",
       body: JSON.stringify({ name }),
     });
-    const idx = customCategories.findIndex((c) => c.id === parseInt(editingCategoryId));
-    if (idx !== -1) customCategories[idx] = updated;
-    const idx2 = categories.findIndex((c) => c.id === parseInt(editingCategoryId));
-    if (idx2 !== -1) categories[idx2] = updated;
+    const idx = categories.findIndex((c) => c.id === parseInt(editingCategoryId));
+    if (idx !== -1) categories[idx] = updated;
     toast("Category updated.");
     closeModal(editCatModal);
     renderBudgets();
@@ -563,12 +687,12 @@ editCatForm.addEventListener("submit", async (e) => {
   }
 });
 
+/** Confirm deletion of a custom category. */
 deleteCatConfirmBtn.addEventListener("click", async () => {
   if (!pendingDeleteId) return;
   disableBtn(deleteCatConfirmBtn, true);
   try {
     await apiFetch(`/api/finance/categories/${pendingDeleteId}/`, { method: "DELETE" });
-    customCategories = customCategories.filter((c) => c.id !== parseInt(pendingDeleteId));
     categories       = categories.filter((c) => c.id !== parseInt(pendingDeleteId));
     toast("Category deleted.");
     closeModal(deleteCatModal);
@@ -581,7 +705,16 @@ deleteCatConfirmBtn.addEventListener("click", async () => {
   }
 });
 
+/**
+ * Open a modal overlay.
+ * @param {HTMLElement} modal - The modal element.
+ */
 function openModal(modal)  { modal.classList.add("modal--open");    modal.style.display = "flex"; }
+
+/**
+ * Close a modal overlay.
+ * @param {HTMLElement} modal - The modal element.
+ */
 function closeModal(modal) { modal.classList.remove("modal--open"); modal.style.display = "none"; }
 
 document.querySelectorAll(".modal-close, .cancel-btn, .set-budget-close, .set-budget-cancel, .modal-close-custom, .cancel-custom-btn, .edit-category-close, .edit-category-cancel, .delete-budget-close, .delete-budget-cancel, .delete-category-close, .delete-category-cancel")

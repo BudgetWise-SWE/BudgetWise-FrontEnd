@@ -1,37 +1,58 @@
-// ============================================================
-//  BudgetWise — Transactions Page
-// ============================================================
+/**
+ * @file BudgetWise — Transaction management page.
+ * Handles loading categories, submitting new transactions,
+ * paginating the transaction list, and displaying the current balance.
+ * @module transaction
+ */
+
 import {
   requireAuth, apiFetch, fmt, fmtDate, getCategoryMeta, toast, logout,
 } from "./api.js";
 
 requireAuth();
 
-// ── DOM refs ─────────────────────────────────────────────────
+/** @type {HTMLFormElement} */
 const form          = document.getElementById("transaction-form");
+/** @type {HTMLSelectElement} */
 const typeSelect    = document.getElementById("type");
+/** @type {HTMLInputElement} */
 const nameInput     = document.getElementById("name");
+/** @type {HTMLInputElement} */
 const amountInput   = document.getElementById("amount");
+/** @type {HTMLSelectElement} */
 const categorySelect= document.getElementById("category");
+/** @type {HTMLInputElement} */
 const dateInput     = document.getElementById("tx-date");
+/** @type {HTMLTextAreaElement} */
 const notesInput    = document.getElementById("notes");
+/** @type {HTMLTableSectionElement} */
 const tbody         = document.querySelector(".tx-table tbody");
+/** @type {HTMLElement} */
 const balanceEl     = document.getElementById("total_balance");
+/** @type {HTMLElement} */
 const pageInfoEl    = document.querySelector(".pagination__info");
+/** @type {HTMLButtonElement} */
 const prevBtn       = document.getElementById("prev-btn");
+/** @type {HTMLButtonElement} */
 const nextBtn       = document.getElementById("next-btn");
 
-// ── State ─────────────────────────────────────────────────────
+/** Number of transactions per page. @type {number} */
 const PAGE_SIZE = 5;
+/** All fetched transactions. @type {Array<Object>} */
 let allTransactions = [];
+/** Current pagination page (1-indexed). @type {number} */
 let currentPage     = 1;
 
-// ── Prefill today's date ──────────────────────────────────────
+/** Prefill the date input with today's date. */
 dateInput.value = new Date().toISOString().split("T")[0];
 
-// ── Categories from API ───────────────────────────────────────
+/** All available categories from the API. @type {Array<Object>} */
 let allCategories = [];
 
+/**
+ * Fetch categories from the API and populate the dropdown.
+ * @returns {Promise<void>}
+ */
 async function loadCategories() {
   try {
     const data = await apiFetch("/api/finance/categories/");
@@ -43,10 +64,18 @@ async function loadCategories() {
   updateCategoryOptions(getSelectedType());
 }
 
+/**
+ * Get the currently selected transaction type.
+ * @returns {"expense"|"income"} The transaction type.
+ */
 function getSelectedType() {
   return typeSelect.value || "expense";
 }
 
+/**
+ * Filter the category dropdown options by the given transaction type.
+ * @param {"expense"|"income"} type - The transaction type to filter for.
+ */
 function updateCategoryOptions(type) {
   const cats = allCategories.filter((c) => (c.type || "").toLowerCase() === type);
   if (!cats.length) {
@@ -60,7 +89,10 @@ typeSelect.addEventListener("change", () => {
   updateCategoryOptions(getSelectedType());
 });
 
-// ── Load total balance from dashboard summary ─────────────────
+/**
+ * Fetch and display the total balance from the dashboard summary endpoint.
+ * @returns {Promise<void>}
+ */
 async function loadBalance() {
   try {
     const data = await apiFetch("/api/analytics/dashboard-summary/");
@@ -68,7 +100,10 @@ async function loadBalance() {
   } catch (_) {}
 }
 
-// ── Load all transactions ─────────────────────────────────────
+/**
+ * Fetch all transactions from the API and render the first page.
+ * @returns {Promise<void>}
+ */
 async function loadTransactions() {
   try {
     const data = await apiFetch("/api/finance/transactions/");
@@ -79,7 +114,10 @@ async function loadTransactions() {
   }
 }
 
-// ── Render one page of the table ──────────────────────────────
+/**
+ * Render a single page of the transaction table.
+ * @param {number} page - The page number to render (1-indexed).
+ */
 function renderPage(page) {
   currentPage          = page;
   const totalPages     = Math.max(1, Math.ceil(allTransactions.length / PAGE_SIZE));
@@ -133,7 +171,6 @@ function renderPage(page) {
   }).join("");
 }
 
-// ── Pagination buttons ────────────────────────────────────────
 prevBtn.addEventListener("click", () => {
   if (currentPage > 1) renderPage(currentPage - 1);
 });
@@ -142,7 +179,11 @@ nextBtn.addEventListener("click", () => {
   if (currentPage < totalPages) renderPage(currentPage + 1);
 });
 
-// ── Submit new transaction ────────────────────────────────────
+/**
+ * Handle form submission — create a new transaction via the API.
+ * @param {SubmitEvent} e - The form submit event.
+ * @returns {Promise<void>}
+ */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -207,7 +248,6 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-// ── Init ──────────────────────────────────────────────────────
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
 loadCategories();
 loadBalance();

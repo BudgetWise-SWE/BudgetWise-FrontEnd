@@ -1,35 +1,58 @@
-// ============================================================
-//  BudgetWise — Transaction History Page
-// ============================================================
+/**
+ * @file BudgetWise — Transaction History page.
+ * Provides searchable, filterable, paginated transaction history
+ * with summary statistics and CSV export functionality.
+ * @module history
+ */
+
 import { requireAuth, apiFetch, fmt, fmtDate, getCategoryMeta, toast, logout } from "./api.js";
 
 requireAuth();
 
-// ── State ─────────────────────────────────────────────────────
+/** All fetched transactions. @type {Array<Object>} */
 let allTransactions  = [];
+/** Transactions matching the current filter criteria. @type {Array<Object>} */
 let filtered         = [];
+/** Number of transactions per page. @type {number} */
 const PAGE_SIZE      = 10;
+/** Current pagination page (1-indexed). @type {number} */
 let currentPage      = 1;
 
-// ── DOM refs ─────────────────────────────────────────────────
+/** @type {HTMLTableSectionElement} */
 const tbody              = document.getElementById("historyTableBody");
+/** @type {HTMLInputElement} */
 const searchInput        = document.getElementById("searchInput");
+/** @type {HTMLSelectElement} */
 const categoryFilter     = document.getElementById("categoryFilter");
+/** @type {HTMLInputElement} */
 const dateFromInput      = document.getElementById("dateFrom");
+/** @type {HTMLInputElement} */
 const dateToInput        = document.getElementById("dateTo");
+/** @type {HTMLSelectElement} */
 const typeFilter         = document.getElementById("typeFilter");
+/** @type {HTMLButtonElement} */
 const resetBtn           = document.getElementById("resetFilters");
+/** @type {HTMLButtonElement} */
 const exportBtn          = document.getElementById("exportBtn");
 
+/** @type {HTMLElement} */
 const totalTransEl       = document.getElementById("totalTransactions");
+/** @type {HTMLElement} */
 const totalIncomeEl      = document.getElementById("totalIncome");
+/** @type {HTMLElement} */
 const totalExpensesEl    = document.getElementById("totalExpenses");
+/** @type {HTMLElement} */
 const netBalanceEl       = document.getElementById("netBalance");
 
+/** @type {HTMLElement} */
 const pageInfoEl         = document.querySelector(".pagination__info");
+/** @type {HTMLElement} */
 const paginationControls = document.querySelector(".pagination__controls");
 
-// ── Load ──────────────────────────────────────────────────────
+/**
+ * Fetch all transactions from the API and apply current filters.
+ * @returns {Promise<void>}
+ */
 async function loadTransactions() {
   try {
     const data = await apiFetch("/api/finance/transactions/");
@@ -41,13 +64,16 @@ async function loadTransactions() {
   }
 }
 
-// ── Filter ────────────────────────────────────────────────────
+/**
+ * Read all filter inputs and re-filter the transaction list,
+ * then re-render summary stats and paginated table.
+ */
 function applyFilters() {
   const search   = searchInput.value.toLowerCase();
   const category = categoryFilter.value;
   const dateFrom = dateFromInput.value ? new Date(dateFromInput.value) : null;
   const dateTo   = dateToInput.value   ? new Date(dateToInput.value)   : null;
-  const type     = typeFilter.value;   // "" | "credit" | "debit"
+  const type     = typeFilter.value;
 
   filtered = allTransactions.filter((tx) => {
     const name    = (tx.name || tx.category_display_name || "").toLowerCase();
@@ -70,7 +96,10 @@ function applyFilters() {
   renderPage(1);
 }
 
-// ── Summary stats ─────────────────────────────────────────────
+/**
+ * Calculate and render the summary statistics for the filtered transactions
+ * (total count, income sum, expense sum, net balance).
+ */
 function renderSummaryStats() {
   const income   = filtered.filter((t) => (t.type || "").toLowerCase() === "income")
                            .reduce((s, t) => s + Math.abs(parseFloat(t.amount || t.amountOfMoney || 0)), 0);
@@ -87,7 +116,10 @@ function renderSummaryStats() {
   else         netBalanceEl.style.color = "";
 }
 
-// ── Render page ───────────────────────────────────────────────
+/**
+ * Render a single page of the transaction table and update pagination controls.
+ * @param {number} page - The page number to render (1-indexed).
+ */
 function renderPage(page) {
   currentPage      = page;
   const total      = filtered.length;
@@ -95,12 +127,10 @@ function renderPage(page) {
   const start      = (page - 1) * PAGE_SIZE;
   const slice      = filtered.slice(start, start + PAGE_SIZE);
 
-  // Page info
   const from = total === 0 ? 0 : start + 1;
   const to   = Math.min(start + PAGE_SIZE, total);
-  pageInfoEl.textContent = `Showing ${from}–${to} of ${total.toLocaleString()} transactions`;
+  pageInfoEl.textContent = `Showing ${from}\u2013${to} of ${total.toLocaleString()} transactions`;
 
-  // Rows
   if (!slice.length) {
     tbody.innerHTML = `
       <tr>
@@ -149,11 +179,14 @@ function renderPage(page) {
     }).join("");
   }
 
-  // Pagination buttons
   renderPagination(page, totalPages);
 }
 
-// ── Edit / Delete ────────────────────────────────────────────
+/**
+ * Handle edit/delete button clicks on transaction rows.
+ * DELETE removes via API and re-renders; EDIT prompts for name/amount then PATCHes.
+ * @param {MouseEvent} e - Click event on the table body.
+ */
 tbody.addEventListener("click", async (e) => {
   const btn = e.target.closest("button");
   if (!btn) return;
@@ -162,7 +195,6 @@ tbody.addEventListener("click", async (e) => {
   const id = row.dataset.id;
   if (!id) return;
 
-  // DELETE
   if (btn.classList.contains("delete-tx-btn")) {
     if (!confirm("Delete this transaction? This cannot be undone.")) return;
     try {
@@ -176,7 +208,6 @@ tbody.addEventListener("click", async (e) => {
     return;
   }
 
-  // EDIT
   if (btn.classList.contains("edit-tx-btn")) {
     const tx = allTransactions.find((t) => t.id === parseInt(id));
     if (!tx) return;
@@ -202,13 +233,18 @@ tbody.addEventListener("click", async (e) => {
   }
 });
 
+/**
+ * Build and attach pagination button controls.
+ * Shows a window of up to 5 page numbers around the current page.
+ * @param {number} page - The active page number.
+ * @param {number} totalPages - Total number of pages available.
+ */
 function renderPagination(page, totalPages) {
   if (!paginationControls) return;
 
   const buttons = [];
   buttons.push(`<button class="pagination__btn" ${page <= 1 ? "disabled" : ""} data-page="${page - 1}">Previous</button>`);
 
-  // Show window of pages
   const start = Math.max(1, page - 2);
   const end   = Math.min(totalPages, page + 2);
   for (let p = start; p <= end; p++) {
@@ -225,7 +261,6 @@ function renderPagination(page, totalPages) {
   });
 }
 
-// ── Filter event listeners ────────────────────────────────────
 [searchInput, categoryFilter, dateFromInput, dateToInput, typeFilter].forEach((el) => {
   el?.addEventListener("input",  applyFilters);
   el?.addEventListener("change", applyFilters);
@@ -240,7 +275,9 @@ resetBtn?.addEventListener("click", () => {
   applyFilters();
 });
 
-// ── Export CSV ────────────────────────────────────────────────
+/**
+ * Export the currently filtered transactions as a CSV file download.
+ */
 exportBtn?.addEventListener("click", () => {
   if (!filtered.length) {
     toast("No transactions to export.", "error");
@@ -269,6 +306,5 @@ exportBtn?.addEventListener("click", () => {
   toast("Export downloaded!");
 });
 
-// ── Init ──────────────────────────────────────────────────────
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
 loadTransactions();

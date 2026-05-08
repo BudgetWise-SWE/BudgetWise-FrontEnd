@@ -1,12 +1,16 @@
-// ============================================================
-//  BudgetWise — Landing Page (index.html)
-// ============================================================
+/**
+ * @file BudgetWise — Landing page (index.html).
+ * Handles CTA button routing based on authentication status.
+ * @module index
+ */
+
 import { getToken } from "./api.js";
 
+/** @type {HTMLButtonElement} */
 const loginBtn      = document.getElementById("login-btn");
+/** @type {NodeListOf<HTMLButtonElement>} */
 const getStartedBtns = document.querySelectorAll(".btn--primary");
 
-// If already logged in, route CTA to dashboard
 const isLoggedIn = !!getToken();
 
 loginBtn?.addEventListener("click", () => {

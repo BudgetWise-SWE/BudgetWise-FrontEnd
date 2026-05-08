@@ -1,30 +1,58 @@
+/**
+ * @file BudgetWise — Savings Goals page.
+ * Displays, creates, contributes to, and deletes savings goals.
+ * Goals are rendered as cards with circular progress rings.
+ * @module savings
+ */
+
 import { requireAuth, apiFetch, fmt, fmtDate, toast, logout } from "./api.js";
 
 requireAuth();
 
+/** @type {Array<Object>} */
 let goals = [];
+/** @type {number|null} */
 let contributeGoalId = null;
+/** @type {number|null} */
 let deleteGoalId = null;
 
+/** @type {HTMLElement} */
 const goalsGrid       = document.querySelector(".goals-grid");
+/** @type {HTMLElement} */
 const totalSavedEl    = document.querySelector(".summary-card--total .summary-card__value");
+/** @type {HTMLElement} */
 const totalGoalsEl    = document.querySelector(".summary-card--target .summary-card__value");
+/** @type {HTMLElement} */
 const overallProgEl   = document.querySelector(".summary-card--progress .summary-card__value");
 
+/** @type {HTMLButtonElement} */
 const createGoalBtn   = document.getElementById("createGoalBtn");
+/** @type {HTMLElement} */
 const createGoalModal = document.getElementById("createGoalModal");
+/** @type {HTMLFormElement} */
 const goalForm        = document.getElementById("goalForm");
 
+/** @type {HTMLElement} */
 const savingsLoading  = document.getElementById("savingsLoading");
+/** @type {HTMLElement} */
 const savingsError    = document.getElementById("savingsError");
+/** @type {HTMLButtonElement} */
 const savingsRetryBtn = document.getElementById("savingsRetryBtn");
 
+/** @type {HTMLElement} */
 const deleteGoalModal  = document.getElementById("deleteGoalModal");
+/** @type {HTMLElement} */
 const deleteGoalNameEl = document.getElementById("deleteGoalName");
+/** @type {HTMLButtonElement} */
 const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
 
+/** @type {HTMLElement|null} */
 let contributeModal = null;
 
+/**
+ * Fetch all savings goals from the API and render them.
+ * @returns {Promise<void>}
+ */
 async function loadGoals() {
   if (savingsLoading) savingsLoading.style.display = "grid";
   if (savingsError) savingsError.style.display = "none";
@@ -47,6 +75,7 @@ async function loadGoals() {
 
 savingsRetryBtn?.addEventListener("click", loadGoals);
 
+/** Calculate and render the summary cards (total saved, goal count, overall progress). */
 function renderSummary() {
   const totalSaved  = goals.reduce((s, g) => s + parseFloat(g.current_amount || g.saved || 0), 0);
   const totalTarget = goals.reduce((s, g) => s + parseFloat(g.target_amount  || g.target || 0), 0);
@@ -57,6 +86,10 @@ function renderSummary() {
   if (overallProgEl) overallProgEl.textContent = `${pct}%`;
 }
 
+/**
+ * Map of goal name keywords to icon and colour class.
+ * @type {Object<string, {icon: string, cls: string}>}
+ */
 const GOAL_ICONS = {
   emergency : { icon: "security",      cls: "goal-card__icon--emergency" },
   vacation  : { icon: "beach_access",  cls: "goal-card__icon--vacation"  },
@@ -70,6 +103,12 @@ const GOAL_ICONS = {
   default   : { icon: "savings",       cls: "goal-card__icon--emergency" },
 };
 
+/**
+ * Look up the icon and style class for a given goal name.
+ * Matches by substring against the keyword map, falling back to default.
+ * @param {string} [name=""] - The savings goal name.
+ * @returns {{icon: string, cls: string}} Icon name and CSS class.
+ */
 function getGoalMeta(name = "") {
   const lower = name.toLowerCase();
   for (const [key, val] of Object.entries(GOAL_ICONS)) {
@@ -78,12 +117,23 @@ function getGoalMeta(name = "") {
   return GOAL_ICONS.default;
 }
 
+/**
+ * Determine the progress bar colour class based on completion percentage.
+ * @param {number} progress - Progress percentage (0-100+).
+ * @returns {"good"|"warning"|"danger"} The CSS colour modifier.
+ */
 function getProgressColorClass(progress) {
   if (progress >= 100) return "good";
   if (progress >= 60)  return "warning";
   return "danger";
 }
 
+/**
+ * Generate a human-readable status label for a goal.
+ * @param {number} progress - Progress percentage.
+ * @param {boolean} completed - Whether the goal is marked completed.
+ * @returns {string} Status text.
+ */
 function getStatusLabel(progress, completed) {
   if (completed || progress >= 100) return "Completed!";
   if (progress >= 75) return "Almost there!";
@@ -91,6 +141,12 @@ function getStatusLabel(progress, completed) {
   return "Just started";
 }
 
+/**
+ * Get the CSS status class modifier for a goal card.
+ * @param {number} progress - Progress percentage.
+ * @param {boolean} completed - Whether the goal is marked completed.
+ * @returns {"completed"|"almost"|"progress"|"started"} CSS class suffix.
+ */
 function getStatusClass(progress, completed) {
   if (completed || progress >= 100) return "completed";
   if (progress >= 75) return "almost";
@@ -98,10 +154,17 @@ function getStatusClass(progress, completed) {
   return "started";
 }
 
+/**
+ * Calculate the SVG dash-offset for the circular progress ring.
+ * The circle circumference is ~283.
+ * @param {number} progress - Progress percentage (0-100).
+ * @returns {string} The dashoffset value.
+ */
 function dashOffset(progress) {
   return (283 * (1 - Math.min(progress, 100) / 100)).toFixed(1);
 }
 
+/** Build and render all savings goal cards into the grid. */
 function renderGoals() {
   if (!goalsGrid) return;
 
@@ -181,9 +244,16 @@ function renderGoals() {
   });
 }
 
+/** Open the create-goal modal. */
 function openCreateModal() { openModal(createGoalModal); }
 createGoalBtn?.addEventListener("click", openCreateModal);
 
+/**
+ * Handle goal creation form submission.
+ * Creates the goal and optionally adds an initial contribution.
+ * @param {SubmitEvent} e - The form submit event.
+ * @returns {Promise<void>}
+ */
 goalForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const name          = document.getElementById("goalName").value.trim();
@@ -230,6 +300,12 @@ goalForm.addEventListener("submit", async (e) => {
   }
 });
 
+/**
+ * Open the contribute-funds modal for a specific goal.
+ * Creates the modal DOM lazily on first use.
+ * @param {string} goalId - The goal ID.
+ * @param {string} goalName - The goal display name.
+ */
 function openContributeModal(goalId, goalName) {
   contributeGoalId = goalId;
 
@@ -285,17 +361,23 @@ function openContributeModal(goalId, goalName) {
     });
   }
 
-  document.getElementById("contributeTitle").textContent = `Add Funds — ${goalName}`;
+  document.getElementById("contributeTitle").textContent = `Add Funds \u2014 ${goalName}`;
   document.getElementById("contributeAmount").value = "";
   openModal(contributeModal);
 }
 
+/**
+ * Prompt the user to confirm deletion of a goal.
+ * @param {string} id - The goal ID.
+ * @param {string} name - The goal display name.
+ */
 function promptDeleteGoal(id, name) {
   deleteGoalId = id;
   if (deleteGoalNameEl) deleteGoalNameEl.textContent = name;
   openModal(deleteGoalModal);
 }
 
+/** Confirm and execute the goal deletion. */
 confirmDeleteBtn?.addEventListener("click", async () => {
   if (!deleteGoalId) return;
   confirmDeleteBtn.disabled = true;
@@ -317,7 +399,16 @@ confirmDeleteBtn?.addEventListener("click", async () => {
   }
 });
 
+/**
+ * Open a modal overlay.
+ * @param {HTMLElement} modal - The modal element.
+ */
 function openModal(modal)  { if (modal) { modal.style.display = "flex"; modal.classList.add("modal--open"); } }
+
+/**
+ * Close a modal overlay.
+ * @param {HTMLElement} modal - The modal element.
+ */
 function closeModal(modal) { if (modal) { modal.style.display = "none"; modal.classList.remove("modal--open"); } }
 
 document.querySelectorAll(".modal-close, .cancel-btn").forEach((btn) => {
