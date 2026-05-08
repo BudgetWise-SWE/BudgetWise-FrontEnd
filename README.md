@@ -1,162 +1,68 @@
-# 💰 Personal Budgeting System – Frontend
+# BudgetWise – Frontend
 
-This project is the **frontend implementation** of a Personal Budgeting Web Application. It provides users with an interactive interface to manage their finances, including tracking income, expenses, budgets, and savings goals.
+A personal budgeting web application for tracking income, expenses, budgets, and savings goals.
 
----
+## Features
 
-## 📌 Features
+- **Authentication** — Login and registration with client-side validation
+- **Income & Expense Management** — Add, edit, and delete transactions with categorized tracking
+- **Dashboard** — Overview of total income, expenses, and balance with Chart.js visualizations
+- **Budget Tracking** — Budget limits with status indicators per category
+- **Savings Goals** — Goal creation with progress bars
+- **Transaction History** — Full history with edit/delete actions
 
-### 🔐 Authentication UI
+## Tech Stack
 
-* Login and registration forms
-* Client-side validation for user inputs
-* Error handling and feedback messages
+- HTML5
+- CSS3 (Flexbox / Grid)
+- JavaScript (Vanilla JS, ES Modules)
+- Chart.js
+- JSDoc
 
-### 💵 Income & Expense Management
+## Project Structure
 
-* Add and display income and expense records
-* Categorized expense tracking
-* Dynamic transaction list rendering
-
-### 📊 Dashboard
-
-* Overview of total income, expenses, and balance
-* Recent transactions display
-* Visual summaries using charts
-
-### 📉 Budget Tracking
-
-* Display budget limits and usage
-* Visual indicators for budget status
-
-### 🎯 Savings Goals
-
-* UI for creating and tracking savings goals
-* Progress display (percentage or progress bars)
-
-### 📜 Transaction History
-
-* List all transactions
-* Filter by category or date (UI level)
-
----
-
-## 🏗️ Architecture (Frontend)
-
-The project follows a modular frontend structure:
-
-* **UI Components:** Forms, tables, cards, charts
-* **State Handling:** JavaScript-based state updates
-* **API Integration:** Fetching and sending data via REST APIs
-* **Separation of Concerns:** Organized into reusable components and services
-
----
-
-## ⚙️ Tech Stack
-
-* HTML5
-* CSS3 (Flexbox / Grid)
-* JavaScript (Vanilla JS)
-
-### Optional Libraries (if used)
-
-* Chart.js (for data visualization)
-* Bootstrap / Tailwind (for styling)
-
----
-
-## 📂 Project Structure
-
-```id="6wr7w9"
-frontend/
-│
-├── css/
-│   └── styles.css
-│
-├── js/
-│   ├── main.js
-│   ├── transactions.js
-│   └── utils.js
-│
-├── pages/
-│   ├── dashboard.html
-│   ├── transactions.html
-│   ├── budget.html
-│   └── goals.html
-│
-├── assets/
-│   └── images/
-│
-└── index.html
+```
+BudgetWise-FrontEnd/
+├── CSS/          # Stylesheets
+├── HTML/         # Page templates
+├── JS/           # JavaScript modules (ES modules)
+├── assets/       # Static assets
+├── jsdoc.json    # JSDoc configuration
+├── package.json
+└── README.md
 ```
 
----
-
-## 🚀 Getting Started
-
-### 🔹 Prerequisites
-
-* Web browser (Chrome, Edge, Firefox)
-
----
-
-### 🔹 Run the Project
+## Getting Started
 
 1. Clone the repository:
 
-```bash id="c4fy0h"
-git clone https://github.com/your-username/personal-budgeting-frontend.git
-cd personal-budgeting-frontend
+```bash
+git clone https://github.com/BudgetWise-SWE/BudgetWise-FrontEnd.git
+cd BudgetWise-FrontEnd
 ```
 
-2. Open the project:
+2. Open `index.html` in your browser, or use Live Server (VS Code extension).
 
-* Open `index.html` in your browser
-  OR
-* Use Live Server (VS Code extension)
+3. Generate API documentation:
 
----
-
-## 🔌 API Integration
-
-The frontend communicates with a backend API using:
-
-* `fetch()` or `XMLHttpRequest`
-* JSON data format
-
-Example:
-
-```javascript id="8a5q7k"
-fetch('/api/transactions')
-  .then(response => response.json())
-  .then(data => console.log(data));
+```bash
+npm install
+npm run docs
 ```
 
----
+## API Integration
 
-## 📊 UI & UX Highlights
+The frontend communicates with a Django REST backend via `fetch()`. All API calls are centralized in `JS/api.js`.
 
-* Responsive design for different screen sizes
-* Clean and modern layout
-* Interactive elements and real-time updates
-* User-friendly navigation
+## Documentation
 
----
+Generated JSDoc documentation is available in the `docs/` directory. Run `npm run docs` to regenerate.
 
-## 📧 Notes
+## Authors
 
-* This project focuses only on the **frontend layer**
-* Backend services (authentication, database, APIs) are handled separately
+- Basem Mohamed
+- Abdelrahman Tarek
 
----
+## License
 
-## 👨‍💻 Author
-
-* Basem Mohamed
-* Abdelrahman Tarek
-
----
-
-## 📄 License
-
-This project is for educational purposes (CS251 – Software Engineering).
+Educational project for CS251 – Software Engineering.
