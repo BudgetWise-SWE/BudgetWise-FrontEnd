@@ -550,7 +550,7 @@ customCatForm.addEventListener("submit", async (e) => {
   try {
     const cat = await apiFetch("/api/finance/categories/", {
       method: "POST",
-      body: JSON.stringify({ name, type: "expense" }),
+      body: JSON.stringify({ name, type: document.getElementById("customCategoryType").value }),
     });
     categories.push(cat);
     customCategories.push(cat);
