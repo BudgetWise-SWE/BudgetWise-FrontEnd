@@ -45,9 +45,9 @@ function getSelectedType() {
 }
 
 function updateCategoryOptions(type) {
-  const cats = allCategories.filter((c) => !c.is_predefined && (c.type || "").toLowerCase() === type);
+  const cats = allCategories.filter((c) => c.is_predefined !== true && (c.type || "").toLowerCase() === type);
   if (!cats.length) {
-    categorySelect.innerHTML = `<option>${type === "income" ? "Income" : "Other"}</option>`;
+    categorySelect.innerHTML = `<option value="">-- No custom categories --</option>`;
     return;
   }
   categorySelect.innerHTML = cats.map((c) => `<option>${c.name}</option>`).join("");
@@ -147,6 +147,11 @@ form.addEventListener("submit", async (e) => {
   const name        = nameInput.value.trim();
   const amount      = parseFloat(amountInput.value);
   const category_name = categorySelect.value;
+
+  if (!category_name) {
+    toast("Please create a category first.", "error");
+    return;
+  }
   const date        = dateInput.value;
   const notes       = notesInput.value.trim();
 
