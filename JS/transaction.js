@@ -45,7 +45,7 @@ function getSelectedType() {
 }
 
 function updateCategoryOptions(type) {
-  const cats = allCategories.filter((c) => (c.type || "").toLowerCase() === type);
+  const cats = allCategories.filter((c) => !c.is_predefined && (c.type || "").toLowerCase() === type);
   if (!cats.length) {
     categorySelect.innerHTML = `<option>${type === "income" ? "Income" : "Other"}</option>`;
     return;
